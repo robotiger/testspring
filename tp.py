@@ -233,17 +233,29 @@ def runmesure(distance,step):
 
 
 def home_ym():
-    if gpYm.read_value(): #уже за датчиком, нужно сойти с датчика
-        grb.write("g91g21g1f1000y10\n")
-    time.sleep(10)
+
+    if not gpYm.read_value(): #если не на датчике наедем на него
+        grb.write("g91g21g1f1000y-60\n") #
+        time.sleep(6)
+    #останавливается самостоятельно по soft_reset
+
+    for i in range(15):
+        if gpYm.read_value(): #уже за датчиком, нужно сойти с датчика
+            grb.write("g91g21g1f1000y1\n") #сходим на 1 мм
+            time.sleep(0.3)
+        else:
+            break #как только сошли прекращаем движение
+            
+    grb.write("g91g21g1f1000y0.3\n") 
+        
     if gpYm.read_value(): #не сошли с датчика. ошибка
         print("не сошли с датчика. ошибка")
         #stop_event.set()
     else:    
-        grb.write("g91g21g1f20y-50\n")
+        grb.write("g91g21g1f10y-3\n")
         time.sleep(10)
         if gpYm.read_value():
-            print("Y axis at home (ym)")
+            print("по оси Y вышли в ноль по датчику (ym)")
         else:
             print("датчик ym не нашли")
             #stop_event.set()
