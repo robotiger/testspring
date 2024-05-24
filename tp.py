@@ -240,7 +240,7 @@ def home_ym():
         print("не сошли с датчика. ошибка")
         #stop_event.set()
     else:    
-        grb.write("g91g21g1f200y-50\n")
+        grb.write("g91g21g1f20y-50\n")
         time.sleep(10)
         if gpYm.read_value():
             print("Y axis at home (ym)")
