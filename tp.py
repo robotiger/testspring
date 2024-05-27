@@ -384,8 +384,9 @@ if __name__ == '__main__':
         runtest(runspeed,cycle)
         time.sleep(2)
         find_edge()
-        xlSaveRow(runmesure())
         
+        xlSaveRow(runmesure(),cycle)
+        home_ym()
         
 
         if stop_event.is_set():
