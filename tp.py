@@ -285,7 +285,7 @@ def runmesure():
     for i in range(distance//Ystep):
         grb.write(f"g91g1f1000y{Ystep}\n".encode())
         time.sleep(0.3)
-        force=mkr.ask()
+        force=mrk.ask()
         forces.append(force)        
         #print(f' dist {i*Ystep}, force {force}')
     grb.write(f"g91g1f1000y-{distance//Ystep*Ystep}\n".encode())
