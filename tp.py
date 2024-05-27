@@ -4,19 +4,36 @@ import os
 import sys
 import threading
 import time
+import datetime
 import logging
+import numpy as np
+import openpyxl as xl
 import OPi.GPIO as g
 from pymodbus.client import ModbusSerialClient
 
 
+xlfilename='test1sp.xls'
+
+Yfirststep=5
+Ystep=1
+Ymax=25
+
+Ycontact=28
+Fkr=200 
+
+totalCycles=1000
+mesureCycles=20
 maxspeed=2500
-runspeed=0
-Fkr=200 # при усилии более 200 ньютонов останавливаем движение
+runspeed=100
+
+
+
+
 
 
 grb=None
 gpp=None
-cm=None
+cmb=None
 mrk=None
 
 used_gpio_pins={"son":7,"ena":12,"idx":26,"yp":15,"ym":22}
@@ -51,8 +68,8 @@ def read_value(pin):
 
 
 def setmb(adr,val):
-    if cm:
-        cm.write_register(adr,val,1)
+    if cmb:
+        cmb.write_register(adr,val,1)
 
 
 def runmb(speed):
@@ -219,21 +236,68 @@ def runtest(speed,count):
     while(gpIdx.count>0):
         print(gpIdx.stop,gpIdx.count,gpIdx.last)
         time.sleep(0.5)
+        
+def  xlCreate():
+    if not os.path.exists(xlfilename):
+        wb=xl.Workbook()
+        ws=wb.active
+        ws.cell(row=1,column=1,value='datetime')
+        ws.cell(row=1,column=2,value='cycles')
+        column=3
+        for i in range(Yfirststep,Ymax+Ystep,Ystep): #числа только целые
+            ws.cell(row=1,column=column,value='cycles')
+            column+=1
+        wb.save(xlfilename)
+        
+        
+def xlSaveRow(forces,cycle):
+    wb=xl.load_workbook(xlfilename)
+    ws=wb.active
+    for mc in range(1,mesureCycles+1):
+        if ws.cell(row=mc,col=1).value==None:
+            break
+    if mc==2:
+        cycles=0
+    else:
+        cycles=ws.cell(row=mc-1,col=2).value
+    cycles+=cycle
+    
+    ws.cell(row=mc,col=1,value=datetime.datetime.now()) 
+    ws.cell(row=mc,col=1,value=cycles) 
+    
+    for i in len(forces):
+        ws.cell(row=mc,col=i+3,value=forces[i]) 
+    
+    wb.save(xlfilename)
+        
+        
+    
+        
+    
+    
 
-
-def runmesure(distance,step):
+def runmesure():
+    forces=[]
     print("move y")
     off("ena")
-    for i in range(distance//step):
-        grb.write(f"g91g1f1000y{step}\n".encode())
-        print(f' dist {i*step}, force {mrk.ask()}')
-    grb.write(f"g91g1f1000y-{distance//step*step}\n".encode())
+    distance=(Ymax-Yfirststep)
+    grb.write(f"g91g1f1000y{Ycontact+Yfirststep}\n".encode())
+    for i in range(distance//Ystep):
+        grb.write(f"g91g1f1000y{Ystep}\n".encode())
+        time.sleep(0.3)
+        force=mkr.ask()
+        forces.append(force)        
+        #print(f' dist {i*Ystep}, force {force}')
+    grb.write(f"g91g1f1000y-{distance//Ystep*Ystep}\n".encode())
     time.sleep(3)
-    on("ena")
+    #on("ena")
+    return forces
+
 
 
 def home_ym():
 
+    off("ena")
     if not gpYm.read_value(): #если не на датчике наедем на него
         grb.write("g91g21g1f1000y-60\n") #
         time.sleep(6)
@@ -259,6 +323,9 @@ def home_ym():
         else:
             print("датчик ym не нашли")
             #stop_event.set()
+    
+
+
 
 
 # ****************main ********************
@@ -281,16 +348,25 @@ if __name__ == '__main__':
     gpIdx.callback_stop=grb.soft_reset
     gpYm.callback_stop=grb.soft_reset
     gpYp.callback_stop=grb.soft_reset
-    
 
     time.sleep(10)
 
     mrk=mark(stop_event)
     mrk.start()
 
-    cm=ModbusSerialClient('/dev/ttyS1',parity='E')
-    cm.connect()
-    cm.write_register(0x1010,0x0,1)
+    cmb=ModbusSerialClient('/dev/ttyS1',parity='E')
+    cmb.connect()
+    cmb.write_register(0x1010,0x0,1)
+
+
+
+            
+        
+      
+        
+        
+
+
 
     off("ena")
     on("son")
@@ -298,14 +374,19 @@ if __name__ == '__main__':
     time.sleep(5)
 
 
+
     home_ym()
 
     for i in range(2):
-
-        runtest(100,9)
+        
+        cycle=totalCycles//mesureCycles
+        
+        runtest(runspeed,cycle)
         time.sleep(2)
         find_edge()
-        runmesure(18,1)
+        xlSaveRow(runmesure())
+        
+        
 
         if stop_event.is_set():
             break
