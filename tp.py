@@ -245,7 +245,8 @@ def  xlCreate():
         ws.cell(row=1,column=2,value='cycles')
         column=3
         for i in range(Yfirststep,Ymax+Ystep,Ystep): #числа только целые
-            ws.cell(row=1,column=column,value='cycles')
+            
+            ws.cell(row=1,column=column,value=i)
             column+=1
         wb.save(xlfilename)
         
@@ -254,20 +255,17 @@ def xlSaveRow(forces,cycle):
     wb=xl.load_workbook(xlfilename)
     ws=wb.active
     for mc in range(1,mesureCycles+1):
-        if ws.cell(row=mc,col=1).value==None:
+        if ws.cell(row=mc,column=1).value==None:
             break
     if mc==2:
         cycles=0
     else:
-        cycles=ws.cell(row=mc-1,col=2).value
+        cycles=ws.cell(row=mc-1,column=2).value
     cycles+=cycle
-    
-    ws.cell(row=mc,col=1,value=datetime.datetime.now()) 
-    ws.cell(row=mc,col=1,value=cycles) 
-    
-    for i in len(forces):
-        ws.cell(row=mc,col=i+3,value=forces[i]) 
-    
+    ws.cell(row=mc,column=1,value=datetime.datetime.now()) 
+    ws.cell(row=mc,column=1,value=cycles) 
+    for i in range(len(forces)):
+        ws.cell(row=mc,column=i+3,value=forces[i]) 
     wb.save(xlfilename)
         
         
