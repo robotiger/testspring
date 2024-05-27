@@ -24,7 +24,7 @@ Fkr=200
 totalCycles=1000
 mesureCycles=20
 maxspeed=2500
-runspeed=100
+runspeed=1000
 
 
 
