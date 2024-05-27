@@ -12,7 +12,7 @@ import OPi.GPIO as g
 from pymodbus.client import ModbusSerialClient
 
 
-xlfilename='test1sp.xls'
+xlfilename='test1sp.xlsx'
 
 Yfirststep=5
 Ystep=1
