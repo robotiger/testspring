@@ -221,7 +221,7 @@ class mark(threading.Thread):
             if mesure > Fkr:
                 grb.soft_reset()
                 
-            if firstMesure==mesure:
+            if abs(firstMesure-mesure)<0.1:
                 break
         return mesure
 
