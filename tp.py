@@ -12,7 +12,7 @@ import OPi.GPIO as g
 from pymodbus.client import ModbusSerialClient
 
 logname='ts.log'
-xlfilename='test3sp.xlsx'
+xlfilename='test4sp.xlsx'
 
 Yfirststep=5
 Ystep=1
@@ -280,7 +280,7 @@ class measures():
         off("ena")
         distance=(Ymax-Yfirststep)
         grb.write(f"g91g1f1000y{Ycontact+Yfirststep}\n".encode())
-        input('pause before mesure')
+        #input('pause before mesure')
         for i in range(distance//Ystep+Ystep):
             grb.write(f"g91g1f1000y{Ystep}\n".encode())
             time.sleep(0.1)
@@ -371,7 +371,7 @@ class measures():
         if not self.atHome:
             self.home_ym()
         self.cycles=0
-        input('pause')
+        #input('pause')
         for i in range(mesureCycles):
             cycle=totalCycles//mesureCycles
             self.runtest(runspeed,cycle)
