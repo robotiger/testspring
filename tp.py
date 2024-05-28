@@ -197,11 +197,12 @@ class mark(threading.Thread):
                             print('run reader')
                             self.ok=True
                             break
+                    if self.ok:
+                        self.reader()
     
             except:
                 pass
-            if self.ok:
-                self.reader()
+
 
     def reader(self):
         print(f"mark reader run for {self.port}")
