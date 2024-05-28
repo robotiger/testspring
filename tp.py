@@ -212,18 +212,19 @@ class mark(threading.Thread):
         self.ser.write(data)
     
     def ask(self):
-        firstMesure=0
+        firstMeasure=0
         for i in range(5):
             time.sleep(0.5)
             self.ser.write(b'?\r')
             time.sleep(0.5)
-            mesure=float(self.buf)
-            if mesure > Fkr:
+            measure=float(self.buf)
+            if measure > Fkr:
                 grb.soft_reset()
                 
-            if abs(firstMesure-mesure)<0.1:
+            if abs(firstMeasure-measure)<0.1:
                 break
-        return mesure
+            firstMeasure=measure
+        return measure
 
 
 
