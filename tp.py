@@ -419,14 +419,14 @@ cmb.connect()
 cmb.write_register(0x1010,0x0,1)
 
 ms=measures()
-ms.run()
+#ms.run()
 
-def joins():
-    grb.join()
-    gpIdx.join()
-    gpYm.join()
-    gpYp.join()
-    mrk.join()
+#def joins():
+    #grb.join()
+    #gpIdx.join()
+    #gpYm.join()
+    #gpYp.join()
+    #mrk.join()
 
 
 
