@@ -43,8 +43,8 @@ def logInf(s):
     
     loglenmax=10000000   
     logging.basicConfig(format='%(asctime)s | %(message)s', datefmt='%Y/%m/%d %H: %M: %S ', filename=logname, level=logging.INFO)
-    # logging.info(s)
-    app.logger.info(s)
+    logging.info(s)
+    #app.logger.info(s)
     try: 
         statinfo= os.stat(logname)
 
