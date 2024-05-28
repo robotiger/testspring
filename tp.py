@@ -387,75 +387,46 @@ class measures():
 
 
 # ****************main ********************
-if __name__ == '__main__':
+#if __name__ == '__main__':
 
-    stop_event = threading.Event()
-    
-    grb=grbs(stop_event)
-    grb.start()
-    
-    gpIdx=gp(stop_event,"idx")
-    gpIdx.start()
+stop_event = threading.Event()
 
-    gpYp=gp(stop_event,"yp")
-    gpYp.start()
+grb=grbs(stop_event)
+grb.start()
 
-    gpYm=gp(stop_event,"ym")
-    gpYm.start()
-    
-    gpIdx.callback_stop=grb.soft_reset
-    gpYm.callback_stop=grb.soft_reset
-    gpYp.callback_stop=grb.soft_reset
+gpIdx=gp(stop_event,"idx")
+gpIdx.start()
 
-    time.sleep(10)
+gpYp=gp(stop_event,"yp")
+gpYp.start()
 
-    mrk=mark(stop_event)
-    mrk.start()
-    time.sleep(10)
-    print(f'mark run is {mrk.ok}')
-    
+gpYm=gp(stop_event,"ym")
+gpYm.start()
 
+gpIdx.callback_stop=grb.soft_reset
+gpYm.callback_stop=grb.soft_reset
+gpYp.callback_stop=grb.soft_reset
 
-    cmb=ModbusSerialClient('/dev/ttyS1',parity='E')
-    cmb.connect()
-    cmb.write_register(0x1010,0x0,1)
-    
-    ms=measures()
-    ms.run()
+time.sleep(10)
 
-    #off("ena")
-    #on("son")
+mrk=mark(stop_event)
+mrk.start()
+time.sleep(10)
+print(f'mark run is {mrk.ok}')
 
-    #time.sleep(5)
+cmb=ModbusSerialClient('/dev/ttyS1',parity='E')
+cmb.connect()
+cmb.write_register(0x1010,0x0,1)
 
-    #xlCreate()
-    #home_ym()
-    #cycles=0
+ms=measures()
+ms.run()
 
-    #for i in range(mesureCycles):
-        #cycle=totalCycles//mesureCycles
-        #runtest(runspeed,cycle)
-        #time.sleep(2)
-        #find_edge()
-        #cycles=xlSaveRow(runmesure(),cycle)
-        #home_ym()
-        #if cycles>totalCycles:
-            #break
-
-        #if stop_event.is_set():
-            #break
-        
-    #stop_event.set()
-    #time.sleep(1)
-    
-    #on("ena")
-    #off("son")
-
-grb.join()
-gpIdx.join()
-gpYm.join()
-gpYp.join()
-mrk.join()
+def joins():
+    grb.join()
+    gpIdx.join()
+    gpYm.join()
+    gpYp.join()
+    mrk.join()
 
 
 
