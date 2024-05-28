@@ -212,12 +212,18 @@ class mark(threading.Thread):
         self.ser.write(data)
     
     def ask(self):
-        time.sleep(0.5)
-        self.ser.write(b'?\r')
-        time.sleep(0.5)
-        if float(self.buf) > Fkr:
-            grb.soft_reset()           
-        return float(self.buf)
+        firstMesure=0
+        for i in range(5):
+            time.sleep(0.5)
+            self.ser.write(b'?\r')
+            time.sleep(0.5)
+            mesure=float(self.buf)
+            if mesure > Fkr:
+                grb.soft_reset()
+                
+            if firstMesure==mesure:
+                break
+        return mesure
 
 
 
@@ -273,7 +279,7 @@ def xlSaveRow(forces,cycle):
     for i in range(len(forces)):
         ws.cell(row=mc,column=i+3,value=forces[i]) 
     wb.save(xlfilename)
-        
+    return cycles   
         
     
         
@@ -288,10 +294,10 @@ def runmesure():
     grb.write(f"g91g1f1000y{Ycontact+Yfirststep}\n".encode())
     for i in range(distance//Ystep):
         grb.write(f"g91g1f1000y{Ystep}\n".encode())
-        time.sleep(0.3)
+        time.sleep(1)
         force=mrk.ask()
         forces.append(force)        
-        #print(f' dist {i*Ystep}, force {force}')
+        print(f' dist {i*Ystep}, force {force}')
     grb.write(f"g91g1f1000y-{distance//Ystep*Ystep}\n".encode())
     time.sleep(3)
     #on("ena")
@@ -385,8 +391,9 @@ if __name__ == '__main__':
     xlCreate()
 
     home_ym()
+    cycles=0
 
-    for i in range(2):
+    for i in range(mesureCycles):
         
         cycle=totalCycles//mesureCycles
         
@@ -394,9 +401,10 @@ if __name__ == '__main__':
         time.sleep(2)
         find_edge()
         
-        xlSaveRow(runmesure(),cycle)
+        cycles=xlSaveRow(runmesure(),cycle)
         home_ym()
-        
+        if cycles>=totalCycles:
+            break
 
         if stop_event.is_set():
             break
