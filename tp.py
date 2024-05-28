@@ -12,7 +12,7 @@ import OPi.GPIO as g
 from pymodbus.client import ModbusSerialClient
 
 logname='ts.log'
-xlfilename='test4sp.xlsx'
+xlfilename='test5sp.xlsx'
 
 Yfirststep=5
 Ystep=1
@@ -21,7 +21,7 @@ Ymax=25
 Ycontact=28
 Fkr=200 
 
-totalCycles=1000
+totalCycles=20000
 mesureCycles=5
 maxspeed=2500
 runspeed=1200
@@ -372,7 +372,7 @@ class measures():
             self.home_ym()
         self.cycles=0
         #input('pause')
-        for i in range(mesureCycles):
+        for i in range(mesureCycles+1):
             cycle=totalCycles//mesureCycles
             self.runtest(runspeed,cycle)
             time.sleep(2)
