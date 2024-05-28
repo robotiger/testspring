@@ -40,20 +40,21 @@ used_gpio_pins={"son":7,"ena":12,"idx":26,"yp":15,"ym":22}
 
 
 def logInf(s): 
+    print(s)
+    #loglenmax=10000000   
+    #logging.basicConfig(format='%(asctime)s | %(message)s', datefmt='%Y/%m/%d %H: %M: %S ', filename=logname, level=logging.INFO)
+    #logging.info(s)
     
-    loglenmax=10000000   
-    logging.basicConfig(format='%(asctime)s | %(message)s', datefmt='%Y/%m/%d %H: %M: %S ', filename=logname, level=logging.INFO)
-    logging.info(s)
     #app.logger.info(s)
-    try: 
-        statinfo= os.stat(logname)
+    #try: 
+        #statinfo= os.stat(logname)
 
-        if statinfo.st_size >loglenmax: 
-            os.rename(logname, lognameold)
-            logging.shutdown()
-            logging.basicConfig(format='%(asctime)s | %(message)s', datefmt='%Y/%m/%d %H: %M: %S ', filename=logname, level=logging.INFO)
-    except: 
-        pass
+        #if statinfo.st_size >loglenmax: 
+            #os.rename(logname, lognameold)
+            #logging.shutdown()
+            #logging.basicConfig(format='%(asctime)s | %(message)s', datefmt='%Y/%m/%d %H: %M: %S ', filename=logname, level=logging.INFO)
+    #except: 
+        #pass
 
 
 
