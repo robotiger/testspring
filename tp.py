@@ -12,7 +12,7 @@ import OPi.GPIO as g
 from pymodbus.client import ModbusSerialClient
 
 
-xlfilename='test2sp.xlsx'
+xlfilename='test3sp.xlsx'
 
 Yfirststep=5
 Ystep=1
@@ -231,116 +231,157 @@ class mark(threading.Thread):
 
 
 
-def find_edge():
-    print("find edge")
-    gpIdx.count=1
-    gpIdx.stop=0
-    grb.write(b"g91g1f1000x1000\n")
-    while(gpIdx.count>0):
-        print(gpIdx.stop,gpIdx.count,gpIdx.last)
-        time.sleep(0.5)
-    print("stop at idx")
-    time.sleep(2)
 
-def runtest(speed,count):
-
-    gpIdx.stop=0
-    gpIdx.count=count
-    runmb(speed)
-    while(gpIdx.count>0):
-        print(gpIdx.stop,gpIdx.count,gpIdx.last)
-        time.sleep(0.5)
         
-def  xlCreate():
-    if not os.path.exists(xlfilename):
-        wb=xl.Workbook()
-        ws=wb.active
-        ws.cell(row=1,column=1,value='datetime')
-        ws.cell(row=1,column=2,value='cycles')
-        column=3
-        for i in range(Yfirststep,Ymax+Ystep,Ystep): #числа только целые
-            
-            ws.cell(row=1,column=column,value=i)
-            column+=1
-        wb.save(xlfilename)
-        
-        
-def xlSaveRow(forces,cycle):
-    wb=xl.load_workbook(xlfilename)
-    ws=wb.active
-    for mc in range(1,mesureCycles+1):
-        if ws.cell(row=mc,column=1).value==None:
-            break
-    if mc==2:
-        cycles=0
-    else:
-        cycles=ws.cell(row=mc-1,column=2).value
-    cycles+=cycle
-    dt=datetime.datetime.now()
-    print(f'date is {dt}')
-    ws.cell(row=mc,column=1,value=dt) 
-    ws.cell(row=mc,column=2,value=cycles) 
-    for i in range(len(forces)):
-        ws.cell(row=mc,column=i+3,value=forces[i]) 
-    wb.save(xlfilename)
-    return cycles   
-        
+     
     
         
     
+class measures():    
+
+    def __init__(self):
+        self.atHome=False
+        
+    def find_edge():
+        print("find edge")
+        gpIdx.count=1
+        gpIdx.stop=0
+        grb.write(b"g91g1f1000x1000\n")
+        while(gpIdx.count>0):
+            print(gpIdx.stop,gpIdx.count,gpIdx.last)
+            time.sleep(0.5)
+        print("stop at idx")
+        time.sleep(2)
     
+    def runtest(speed,count):
+    
+        gpIdx.stop=0
+        gpIdx.count=count
+        runmb(speed)
+        while(gpIdx.count>0):
+            print(gpIdx.stop,gpIdx.count,gpIdx.last)
+            time.sleep(0.5)        
 
-def runmesure():
-    forces=[]
-    print("move y")
-    off("ena")
-    distance=(Ymax-Yfirststep)
-    grb.write(f"g91g1f1000y{Ycontact+Yfirststep}\n".encode())
-    for i in range(distance//Ystep+Ystep):
-        grb.write(f"g91g1f1000y{Ystep}\n".encode())
-        time.sleep(0.1)
-        force=mrk.ask()
-        forces.append(force)        
-        print(f' dist {i*Ystep}, force {force}')
-    grb.write(f"g91g1f1000y-{distance//Ystep*Ystep+Ystep}\n".encode())
-    time.sleep(3)
-    #on("ena")
-    return forces
-
-
-
-def home_ym():
-
-    off("ena")
-    if not gpYm.read_value(): #если не на датчике наедем на него
-        grb.write("g91g21g1f500y-50\n") #
-        time.sleep(6)
-    #останавливается самостоятельно по soft_reset
-
-    for i in range(20):
-        if gpYm.read_value(): #уже за датчиком, нужно сойти с датчика
-            grb.write("g91g21g1f1000y1\n") #сходим на 1 мм
-            time.sleep(1)
-            if mrk.ask()>Fkr:
-                grb.write("g91g21g1f1000y-1\n")
+    def runmesure(self):
+        forces=[]
+        print("move y")
+        off("ena")
+        distance=(Ymax-Yfirststep)
+        grb.write(f"g91g1f1000y{Ycontact+Yfirststep}\n".encode())
+        for i in range(distance//Ystep+Ystep):
+            grb.write(f"g91g1f1000y{Ystep}\n".encode())
+            time.sleep(0.1)
+            force=mrk.ask()
+            forces.append(force)        
+            print(f' dist {i*Ystep}, force {force}')
+        grb.write(f"g91g1f1000y-{distance//Ystep*Ystep+Ystep}\n".encode())
+        time.sleep(3)
+        #on("ena")
+        return forces
+    
+    
+    
+    def home_ym(self):
+        self.atHome=False
+        off("ena")
+        if not gpYm.read_value(): #если не на датчике наедем на него
+            grb.write("g91g21g1f500y-60\n") #
+            time.sleep(6)
+        #останавливается самостоятельно по soft_reset
+    
+        for i in range(20):
+            if gpYm.read_value(): #уже за датчиком, нужно сойти с датчика
+                grb.write("g91g21g1f1000y1\n") #сходим на 1 мм
+                time.sleep(1)
+                if mrk.ask()>Fkr:
+                    grb.write("g91g21g1f1000y-1\n")
+                    
+            else:
+                break #как только сошли прекращаем движение
                 
-        else:
-            break #как только сошли прекращаем движение
+        grb.write("g91g21g1f1000y0.3\n") 
             
-    grb.write("g91g21g1f1000y0.3\n") 
-        
-    if gpYm.read_value(): #не сошли с датчика. ошибка
-        print("не сошли с датчика. ошибка")
-        #stop_event.set()
-    else:    
-        grb.write("g91g21g1f10y-3\n")
-        time.sleep(10)
-        if gpYm.read_value():
-            print("по оси Y вышли в ноль по датчику (ym)")
-        else:
-            print("датчик ym не нашли")
+        if gpYm.read_value(): #не сошли с датчика. ошибка
+            print("не сошли с датчика. ошибка")
             #stop_event.set()
+        else:    
+            grb.write("g91g21g1f10y-3\n")
+            time.sleep(10)
+            if gpYm.read_value():
+                print("по оси Y вышли в ноль по датчику (ym)")
+                self.atHome=True
+            else:
+                print("датчик ym не нашли")
+                #stop_event.set()
+                
+    def  xlCreate():
+        if not os.path.exists(xlfilename):
+            wb=xl.Workbook()
+            ws=wb.active
+            ws.cell(row=1,column=1,value='datetime')
+            ws.cell(row=1,column=2,value='cycles')
+            column=3
+            for i in range(Yfirststep,Ymax+Ystep,Ystep): #числа только целые
+                
+                ws.cell(row=1,column=column,value=i)
+                column+=1
+            wb.save(xlfilename)
+            
+            
+    def xlSaveRow(forces,cycle):
+        wb=xl.load_workbook(xlfilename)
+        ws=wb.active
+        for mc in range(1,mesureCycles+1):
+            if ws.cell(row=mc,column=1).value==None:
+                break
+        if mc==2:
+            cycles=0
+        else:
+            cycles=ws.cell(row=mc-1,column=2).value
+        cycles+=cycle
+        dt=datetime.datetime.now()
+        print(f'date is {dt}')
+        ws.cell(row=mc,column=1,value=dt) 
+        ws.cell(row=mc,column=2,value=cycles) 
+        for i in range(len(forces)):
+            ws.cell(row=mc,column=i+3,value=forces[i]) 
+        wb.save(xlfilename)
+        return cycles       
+                
+    def run(self):
+        off("ena")
+        on("son")
     
+        time.sleep(5)
+    
+        self.xlCreate()
+        self.home_ym()
+        if not self.atHome:
+            self.home_ym()
+        self.cycles=0
+    
+        for i in range(mesureCycles):
+            cycle=totalCycles//mesureCycles
+            self.runtest(runspeed,cycle)
+            time.sleep(2)
+            self.find_edge()
+            cycles=self.xlSaveRow(runmesure(),cycle)
+            self.home_ym()
+            if not self.atHome:
+                self.home_ym()            
+            if cycles>totalCycles:
+                break
+    
+            if stop_event.is_set():
+                break
+            
+        stop_event.set()
+        time.sleep(1)
+        
+        on("ena")
+        off("son")        
+        
+        
 
 
 
@@ -372,51 +413,43 @@ if __name__ == '__main__':
     mrk.start()
     time.sleep(10)
     print(f'mark run is {mrk.ok}')
+    
+
 
     cmb=ModbusSerialClient('/dev/ttyS1',parity='E')
     cmb.connect()
     cmb.write_register(0x1010,0x0,1)
-
-
-
-            
-        
-      
-        
-        
-
-
-
-    off("ena")
-    on("son")
-
-    time.sleep(5)
-
-    xlCreate()
-
-    home_ym()
-    cycles=0
-
-    for i in range(mesureCycles):
-        
-        cycle=totalCycles//mesureCycles
-        
-        runtest(runspeed,cycle)
-        time.sleep(2)
-        find_edge()
-        
-        cycles=xlSaveRow(runmesure(),cycle)
-        home_ym()
-        if cycles>=totalCycles:
-            break
-
-        if stop_event.is_set():
-            break
-    stop_event.set()
-    time.sleep(1)
     
-    on("ena")
-    off("son")
+    ms=measures()
+    ms.run()
+
+    #off("ena")
+    #on("son")
+
+    #time.sleep(5)
+
+    #xlCreate()
+    #home_ym()
+    #cycles=0
+
+    #for i in range(mesureCycles):
+        #cycle=totalCycles//mesureCycles
+        #runtest(runspeed,cycle)
+        #time.sleep(2)
+        #find_edge()
+        #cycles=xlSaveRow(runmesure(),cycle)
+        #home_ym()
+        #if cycles>totalCycles:
+            #break
+
+        #if stop_event.is_set():
+            #break
+        
+    #stop_event.set()
+    #time.sleep(1)
+    
+    #on("ena")
+    #off("son")
 
 grb.join()
 gpIdx.join()
