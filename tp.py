@@ -38,6 +38,25 @@ mrk=None
 
 used_gpio_pins={"son":7,"ena":12,"idx":26,"yp":15,"ym":22}
 
+
+def logInf(s): 
+    
+    loglenmax=10000000   
+    logging.basicConfig(format='%(asctime)s | %(message)s', datefmt='%Y/%m/%d %H: %M: %S ', filename=logname, level=logging.INFO)
+    # logging.info(s)
+    app.logger.info(s)
+    try: 
+        statinfo= os.stat(logname)
+
+        if statinfo.st_size >loglenmax: 
+            os.rename(logname, lognameold)
+            logging.shutdown()
+            logging.basicConfig(format='%(asctime)s | %(message)s', datefmt='%Y/%m/%d %H: %M: %S ', filename=logname, level=logging.INFO)
+    except: 
+        pass
+
+
+
 #Переключение вывода на выход и выдача на него единицы
 def on(pin):
     if type(pin)==type("str"):
@@ -122,14 +141,14 @@ class gp(threading.Thread):
 
 class grbs(threading.Thread):
     def __init__(self,stop_event):
-        print("__init__")
+        logInf("grbs __init__ ")
         threading.Thread.__init__(self)  
         self.stop_event=stop_event
         
         self.pack=b''
         self.length=1
     def run(self): 
-        print("run grbs")
+        logInf("run grbs")
         for portn in range(3):
             self.port=f'/dev/ttyUSB{portn}'
             try:
@@ -145,41 +164,41 @@ class grbs(threading.Thread):
             except:
                 pass
     def reader(self):
-        print(f"grb reader run for {self.port}")
+        logInf(f"grb reader run for {self.port}")
         buf=b''
         while(not self.stop_event.is_set()):
             buf=self.ser.readline().decode()
             if len(buf)>0:
-                print(buf)
+                logInf(f'grbs rcv {buf}')
     def write(self,data):
         if type(data)==type('str'):
             data=data.encode()
         x=self.ser.write(data)
-        print(f"sent to grbl {x} byte: {data}")
+        logInf(f"sent to grbl {x} byte: {data}")
     def soft_reset(self):
         self.write(b'!')
         setmb(76,100)
         time.sleep(1)
         self.write(b'\x18')
         setmb(0x1010,0)
-        print("soft reset done")
+        logInf("soft reset done")
 
 
 class mark(threading.Thread):
 
     def __init__(self,stop_event):
-        print("__init__")
+        logInf("mark __init__")
         threading.Thread.__init__(self)  
         self.stop_event=stop_event
         self.ok=False        
         self.buf=''
     def run(self): 
-        print("run mark")
+        logInf("run mark")
         
         val=None
         for portn in range(3):
             self.port=f'/dev/ttyUSB{portn}'
-            print(f'mark try open {self.port}')
+            logInf(f'mark try open {self.port}')
             try:
                 with serial.Serial(self.port, 115200, timeout=1) as self.ser:
                     for i in range(5):
@@ -194,7 +213,6 @@ class mark(threading.Thread):
                         except:
                             pass
                         if type(val)==type(0.0):
-                            print('run reader')
                             self.ok=True
                             break
                     if self.ok:
@@ -205,11 +223,11 @@ class mark(threading.Thread):
 
 
     def reader(self):
-        print(f"mark reader run for {self.port}")
+        logInf(f"mark reader run for {self.port}")
         
         while(not self.stop_event.is_set()):
             self.buf=self.ser.readline().decode()
-            print(self.buf)
+            #print(self.buf)
 
     def write(self,data):
         self.ser.write(data)
@@ -230,27 +248,20 @@ class mark(threading.Thread):
         return measure
 
 
-
-
-        
-     
-    
-        
-    
 class measures():    
 
     def __init__(self):
         self.atHome=False
         
     def find_edge(self):
-        print("find edge")
+        logInf("start find edge")
         gpIdx.count=1
         gpIdx.stop=0
         grb.write(b"g91g1f1000x1000\n")
         while(gpIdx.count>0):
-            print(gpIdx.stop,gpIdx.count,gpIdx.last)
+            #print(gpIdx.stop,gpIdx.count,gpIdx.last)
             time.sleep(0.5)
-        print("stop at idx")
+        logInf("edge found rotation stop at idx")
         time.sleep(2)
     
     def runtest(self,speed,count):
@@ -259,12 +270,12 @@ class measures():
         gpIdx.count=count
         runmb(speed)
         while(gpIdx.count>0):
-            print(gpIdx.stop,gpIdx.count,gpIdx.last)
+            #print(gpIdx.stop,gpIdx.count,gpIdx.last)
             time.sleep(0.5)        
 
     def runmesure(self):
         forces=[]
-        print("move y")
+        logInf("move y ")
         off("ena")
         distance=(Ymax-Yfirststep)
         grb.write(f"g91g1f1000y{Ycontact+Yfirststep}\n".encode())
@@ -273,7 +284,7 @@ class measures():
             time.sleep(0.1)
             force=mrk.ask()
             forces.append(force)        
-            print(f' dist {i*Ystep}, force {force}')
+            logInf(f' dist {i*Ystep}, force {force}')
         grb.write(f"g91g1f1000y-{distance//Ystep*Ystep+Ystep}\n".encode())
         time.sleep(3)
         #on("ena")
@@ -302,16 +313,16 @@ class measures():
         grb.write("g91g21g1f1000y0.3\n") 
             
         if gpYm.read_value(): #не сошли с датчика. ошибка
-            print("не сошли с датчика. ошибка")
+            logInf("не сошли с датчика. ошибка")
             #stop_event.set()
         else:    
             grb.write("g91g21g1f10y-3\n")
             time.sleep(10)
             if gpYm.read_value():
-                print("по оси Y вышли в ноль по датчику (ym)")
+                logInf("по оси Y вышли в ноль по датчику (ym)")
                 self.atHome=True
             else:
-                print("датчик ym не нашли")
+                logInf("датчик ym не нашли")
                 #stop_event.set()
                 
     def  xlCreate(self):
@@ -322,7 +333,6 @@ class measures():
             ws.cell(row=1,column=2,value='cycles')
             column=3
             for i in range(Yfirststep,Ymax+Ystep,Ystep): #числа только целые
-                
                 ws.cell(row=1,column=column,value=i)
                 column+=1
             wb.save(xlfilename)
@@ -365,7 +375,9 @@ class measures():
             self.runtest(runspeed,cycle)
             time.sleep(2)
             self.find_edge()
+            
             cycles=self.xlSaveRow(self.runmesure(),cycle)
+            logInf("do {cycles} cycles")
             self.home_ym()
             if not self.atHome:
                 self.home_ym()            
@@ -412,7 +424,7 @@ time.sleep(10)
 mrk=mark(stop_event)
 mrk.start()
 time.sleep(10)
-print(f'mark run is {mrk.ok}')
+#print(f'mark run is {mrk.ok}')
 
 cmb=ModbusSerialClient('/dev/ttyS1',parity='E')
 cmb.connect()
