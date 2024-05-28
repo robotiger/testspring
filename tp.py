@@ -280,6 +280,7 @@ class measures():
         off("ena")
         distance=(Ymax-Yfirststep)
         grb.write(f"g91g1f1000y{Ycontact+Yfirststep}\n".encode())
+        input('pause before mesure')
         for i in range(distance//Ystep+Ystep):
             grb.write(f"g91g1f1000y{Ystep}\n".encode())
             time.sleep(0.1)
