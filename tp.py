@@ -363,7 +363,7 @@ class measures():
         for i in range(mesureCycles):
             cycle=totalCycles//mesureCycles
             self.runtest(runspeed,cycle)
-            time.sleep(0.3)
+            time.sleep(2)
             self.find_edge()
             cycles=self.xlSaveRow(self.runmesure(),cycle)
             self.home_ym()
