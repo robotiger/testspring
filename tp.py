@@ -365,7 +365,7 @@ class measures():
             self.runtest(runspeed,cycle)
             time.sleep(2)
             self.find_edge()
-            cycles=self.xlSaveRow(runmesure(),cycle)
+            cycles=self.xlSaveRow(self.runmesure(),cycle)
             self.home_ym()
             if not self.atHome:
                 self.home_ym()            
