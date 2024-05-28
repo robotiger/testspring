@@ -266,8 +266,10 @@ def xlSaveRow(forces,cycle):
     else:
         cycles=ws.cell(row=mc-1,column=2).value
     cycles+=cycle
-    ws.cell(row=mc,column=1,value=datetime.datetime.now()) 
-    ws.cell(row=mc,column=1,value=cycles) 
+    dt=datetime.datetime.now()
+    print(f'date is {dt}')
+    ws.cell(row=mc,column=1,value=dt) 
+    ws.cell(row=mc,column=2,value=cycles) 
     for i in range(len(forces)):
         ws.cell(row=mc,column=i+3,value=forces[i]) 
     wb.save(xlfilename)
