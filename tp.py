@@ -242,7 +242,7 @@ class measures():
     def __init__(self):
         self.atHome=False
         
-    def find_edge():
+    def find_edge(self):
         print("find edge")
         gpIdx.count=1
         gpIdx.stop=0
@@ -253,7 +253,7 @@ class measures():
         print("stop at idx")
         time.sleep(2)
     
-    def runtest(speed,count):
+    def runtest(self,speed,count):
     
         gpIdx.stop=0
         gpIdx.count=count
@@ -314,7 +314,7 @@ class measures():
                 print("датчик ym не нашли")
                 #stop_event.set()
                 
-    def  xlCreate():
+    def  xlCreate(self):
         if not os.path.exists(xlfilename):
             wb=xl.Workbook()
             ws=wb.active
@@ -328,7 +328,7 @@ class measures():
             wb.save(xlfilename)
             
             
-    def xlSaveRow(forces,cycle):
+    def xlSaveRow(self,forces,cycle):
         wb=xl.load_workbook(xlfilename)
         ws=wb.active
         for mc in range(1,mesureCycles+1):
