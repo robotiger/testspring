@@ -12,7 +12,7 @@ import OPi.GPIO as g
 from pymodbus.client import ModbusSerialClient
 
 
-xlfilename='test1sp.xlsx'
+xlfilename='test2sp.xlsx'
 
 Yfirststep=5
 Ystep=1
@@ -22,9 +22,9 @@ Ycontact=28
 Fkr=200 
 
 totalCycles=1000
-mesureCycles=20
+mesureCycles=5
 maxspeed=2500
-runspeed=1000
+runspeed=1200
 
 
 
@@ -214,9 +214,9 @@ class mark(threading.Thread):
     def ask(self):
         firstMeasure=0
         for i in range(5):
-            time.sleep(0.5)
+            time.sleep(0.25)
             self.ser.write(b'?\r')
-            time.sleep(0.5)
+            time.sleep(0.25)
             measure=float(self.buf)
             if measure > Fkr:
                 grb.soft_reset()
@@ -293,13 +293,13 @@ def runmesure():
     off("ena")
     distance=(Ymax-Yfirststep)
     grb.write(f"g91g1f1000y{Ycontact+Yfirststep}\n".encode())
-    for i in range(distance//Ystep):
+    for i in range(distance//Ystep+Ystep):
         grb.write(f"g91g1f1000y{Ystep}\n".encode())
-        time.sleep(1)
+        time.sleep(0.1)
         force=mrk.ask()
         forces.append(force)        
         print(f' dist {i*Ystep}, force {force}')
-    grb.write(f"g91g1f1000y-{distance//Ystep*Ystep}\n".encode())
+    grb.write(f"g91g1f1000y-{distance//Ystep*Ystep+Ystep}\n".encode())
     time.sleep(3)
     #on("ena")
     return forces
