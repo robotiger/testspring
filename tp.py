@@ -369,7 +369,7 @@ class measures():
         if not self.atHome:
             self.home_ym()
         self.cycles=0
-    
+        input('pause')
         for i in range(mesureCycles):
             cycle=totalCycles//mesureCycles
             self.runtest(runspeed,cycle)
@@ -431,7 +431,7 @@ cmb.connect()
 cmb.write_register(0x1010,0x0,1)
 
 ms=measures()
-#ms.run()
+ms.run()
 
 def joins():
     grb.join()
