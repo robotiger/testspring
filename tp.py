@@ -162,6 +162,7 @@ class grbs(threading.Thread):
         time.sleep(1)
         self.write(b'\x18')
         setmb(0x1010,0)
+        print("soft reset done")
 
 
 class mark(threading.Thread):
@@ -300,14 +301,17 @@ def home_ym():
 
     off("ena")
     if not gpYm.read_value(): #если не на датчике наедем на него
-        grb.write("g91g21g1f1000y-60\n") #
+        grb.write("g91g21g1f500y-50\n") #
         time.sleep(6)
     #останавливается самостоятельно по soft_reset
 
-    for i in range(15):
+    for i in range(20):
         if gpYm.read_value(): #уже за датчиком, нужно сойти с датчика
             grb.write("g91g21g1f1000y1\n") #сходим на 1 мм
-            time.sleep(0.3)
+            time.sleep(1)
+            if mrk.ask()>Fkr:
+                grb.write("g91g21g1f1000y-1\n")
+                
         else:
             break #как только сошли прекращаем движение
             
@@ -376,7 +380,7 @@ if __name__ == '__main__':
 
     time.sleep(5)
 
-
+    xlCreate()
 
     home_ym()
 
