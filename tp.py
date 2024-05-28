@@ -11,7 +11,7 @@ import openpyxl as xl
 import OPi.GPIO as g
 from pymodbus.client import ModbusSerialClient
 
-
+logname='ts.log'
 xlfilename='test3sp.xlsx'
 
 Yfirststep=5
