@@ -170,7 +170,7 @@ class mark(threading.Thread):
         print("__init__")
         threading.Thread.__init__(self)  
         self.stop_event=stop_event
-        
+        self.ok=False        
         self.buf=''
     def run(self): 
         print("run mark")
@@ -178,6 +178,7 @@ class mark(threading.Thread):
         val=None
         for portn in range(3):
             self.port=f'/dev/ttyUSB{portn}'
+            print(f'mark try open {self.port}')
             try:
                 with serial.Serial(self.port, 115200, timeout=1) as self.ser:
                     for i in range(5):
@@ -192,6 +193,8 @@ class mark(threading.Thread):
                         except:
                             pass
                         if type(val)==type(0.0):
+                            print('run reader')
+                            self.ok=True
                             self.reader()
     
             except:
@@ -351,6 +354,8 @@ if __name__ == '__main__':
 
     mrk=mark(stop_event)
     mrk.start()
+    time.sleep(10)
+    print(f'mark run is {mrk.ok}')
 
     cmb=ModbusSerialClient('/dev/ttyS1',parity='E')
     cmb.connect()
