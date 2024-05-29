@@ -300,7 +300,7 @@ class measures():
         time.sleep(5)
         if not gpYm.read_value(): #если не на датчике наедем на него
             grb.write("g91g21g1f500y-60\n") #
-            time.sleep(6)
+            time.sleep(10)
         #останавливается самостоятельно по soft_reset
     
         for i in range(20):
