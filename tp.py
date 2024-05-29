@@ -297,6 +297,7 @@ class measures():
     def home_ym(self):
         self.atHome=False
         off("ena")
+        time.sleep(5)
         if not gpYm.read_value(): #если не на датчике наедем на него
             grb.write("g91g21g1f500y-60\n") #
             time.sleep(6)
@@ -379,7 +380,7 @@ class measures():
             self.find_edge()
             
             cycles=self.xlSaveRow(self.runmesure(),cycle)
-            logInf("do {cycles} cycles")
+            logInf(f"do {cycles} cycles")
             self.home_ym()
             if not self.atHome:
                 self.home_ym()            
