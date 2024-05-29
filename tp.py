@@ -21,7 +21,7 @@ Ymax=25
 Ycontact=28
 Fkr=200 
 
-totalCycles=20000
+totalCycles=1000
 mesureCycles=5
 maxspeed=2500
 runspeed=1200
