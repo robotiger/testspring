@@ -314,7 +314,7 @@ class measures():
                 break #как только сошли прекращаем движение
                 
         grb.write("g91g21g1f1000y0.3\n") 
-            
+        time.sleep(0.5)    
         if gpYm.read_value(): #не сошли с датчика. ошибка
             logInf("не сошли с датчика. ошибка")
             #stop_event.set()
