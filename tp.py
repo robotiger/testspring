@@ -235,10 +235,10 @@ class mark(threading.Thread):
     
     def ask(self):
         firstMeasure=0
-        for i in range(5):
-            time.sleep(0.25)
+        for i in range(6):
+            time.sleep(0.5)
             self.ser.write(b'?\r')
-            time.sleep(0.25)
+            time.sleep(0.5)
             measure=float(self.buf)
             if measure > Fkr:
                 grb.soft_reset()
