@@ -12,7 +12,7 @@ import OPi.GPIO as g
 from pymodbus.client import ModbusSerialClient
 
 logname='ts.log'
-xlfilename='test6sp.xlsx'
+xlfilename='test7sp.xlsx'
 
 Yfirststep=5
 Ystep=1
@@ -21,7 +21,7 @@ Ymax=24
 Ycontact=28
 Fkr=200 
 
-totalCycles=20000
+totalCycles=200
 mesureCycles=20
 maxspeed=2500
 runspeed=1200
