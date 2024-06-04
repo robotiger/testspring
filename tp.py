@@ -1,3 +1,5 @@
+from flask import Flask, render_template, request, redirect, url_for,  send_file, Response
+from flask_bootstrap import Bootstrap
 import serial 
 import math
 import os
@@ -10,6 +12,16 @@ import numpy as np
 import openpyxl as xl
 import OPi.GPIO as g
 from pymodbus.client import ModbusSerialClient
+import sqlitedict
+
+
+app = Flask(__name__)
+app.secret_key = 'your_ssecret_key'
+
+Bootstrap(app)
+
+config=sqlitedict.SqliteDict('config_tf.db')
+config.autocommit=True
 
 logname='ts.log'
 xlfilename='test7sp.xlsx'
@@ -26,6 +38,25 @@ mesureCycles=20
 maxspeed=2500
 runspeed=1200
 
+tab={ "snum":{"name":"Номер теста","typ":int,"cla":""},
+"sname":{"name":"Наименование","typ":str,"cla":"table-active"},
+"slength":{"name":"Длина","typ":float,"cla":"table-active"},
+"sdiameter":{"name":"Диаметр пружины","typ":float,"cla":"table-active"},
+"sdp":{"name":"Толщина прутка","typ":float,"cla":"table-active"},
+"snrot":{"name":"Число витков","typ":float,"cla":"table-active"},
+"smatherial":{"name":"Материал","typ":str,"cla":"table-active"},
+"skxnom":{"name":"Номинальный коэфф жесткости","typ":float,"cla":"table-success"},
+"cycles":{"name":"Число циклов сжатия","typ":int,"cla":"table-success"},
+"cyclesbetween":{"name":"Число циклов сжатия между измерениями","typ":int,"cla":"table-success"},
+"freq":{"name":"Частота сжатия","typ":float,"cla":"table-success"},
+"lmin":{"name":"Начальное сжатие","typ":int,"cla":"table-success"},
+"lmax":{"name":"Максимальное сжатие","typ":int,"cla":"table-success"},
+"lstep":{"name":"Шаг измерения усилия пружины","typ":int,"cla":"table-success"},
+"docycles":{"name":"Выполнено циклов сжатия","typ":int,"cla":"table-primary"},
+"clen":{"name":"Расчетная длина пружины","typ":float,"cla":"table-primary"},
+"ckx":{"name":"Коэффициент жесткости","typ":float,"cla":"table-primary"},
+"shrink":{"name":"Усадка","typ":float,"cla":"table-primary"},
+    }
 
 
 
@@ -400,41 +431,132 @@ class measures():
 
 
 
+def updateip(): 
+    ip=[]
+
+    #получить ip адрес глобальный если есть
+    #resp=requests.get('http://api.ipify.org')
+    #if resp.status_code == 200: 
+        #ip.append(resp.text)
+    
+    #получить ip адрес локальный
+    for i in ifcfg.interfaces().items(): 
+        if not i[1]['inet'] is None: 
+            ip.append(i[1]['inet'])
+      
+    #logi(f"config wan ip {ip}")     
+    # print("store wanip", ip)
+    with open(wanipname, "w") as the_file: 
+        the_file.write(f"server_name {' '.join(ip)};\n")
+
+
+
+#************************ flask
+
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    if request.method == 'POST':
+        config["sname"] = request.form["sname"]
+        config["slength"] = float(request.form["slength"])
+        config["sdiameter"] = float(request.form["sdiameter"])
+        config["sdp"] = float(request.form["sdp"])
+        config["snrot"] = float(request.form["snrot"])
+        config["smatherial"] = request.form["smatherial"]
+        config["skxnom"] = float(request.form["skxnom"])
+        config["cycles"] = int(request.form["cycles"])
+        config["cyclesbetween"] = int(request.form["cyclesbetween"])
+        config["freq"] = float(request.form["freq"])
+        config["lmin"] = int(request.form["lmin"])
+        config["lmax"] = int(request.form["lmax"])
+        config["lstep"] = int(request.form["lstep"])
+    data={}
+    for x in tab:
+        data[x]=config.get(x,'')
+        
+    data['docycles']=150000
+    if data['cycles']>0:
+        config['progress']=data['docycles']*100//data['cycles']
+    else:
+        config['progress']=0
+    return render_template('index.html',**data)
+
+@app.route('/newtest', methods=['GET', 'POST'])
+def execute_newtest():
+    config['snum']=config.get('snum',1)+1
+    config['xlname']=f'sp{config["snum"]:06d}.xlsx'
+    wb=xl.load_workbook('sp.xlsx')
+    wb.save(config['xlname'])
+    return redirect(url_for('index'))
+
+@app.route('/setspring', methods=['GET', 'POST'])
+def execute_setspring():
+    print('start setspring')
+    ra='setspring'
+    return redirect(url_for('index'))
+
+@app.route('/runtest', methods =['GET', 'POST'])
+def execute_runtest():
+    print('start setspring')
+    ra='setspring'
+    return redirect(url_for('index'))
+
+@app.route('/stoptest')
+def execute_stoptest():
+    print('start setspring')
+    ra='setspring'
+    return redirect(url_for('index'))
+
+@app.route('/download')
+def execute_download():
+    return send_file(config['xlname'], as_attachment=True)
+
+
+@app.route('/progress')
+def progress():
+    def generate():
+        while True:
+            yield f"data:{config['progress']}\n\n"
+            time.sleep(5)
+    return Response(generate(), mimetype= 'text/event-stream')
+
 
 # ****************main ********************
-#if __name__ == '__main__':
+if __name__ == '__main__':
 
-stop_event = threading.Event()
-
-grb=grbs(stop_event)
-grb.start()
-
-gpIdx=gp(stop_event,"idx")
-gpIdx.start()
-
-gpYp=gp(stop_event,"yp")
-gpYp.start()
-
-gpYm=gp(stop_event,"ym")
-gpYm.start()
-
-gpIdx.callback_stop=grb.soft_reset
-gpYm.callback_stop=grb.soft_reset
-gpYp.callback_stop=grb.soft_reset
-
-time.sleep(10)
-
-mrk=mark(stop_event)
-mrk.start()
-time.sleep(10)
-#print(f'mark run is {mrk.ok}')
-
-cmb=ModbusSerialClient('/dev/ttyS1',parity='E')
-cmb.connect()
-cmb.write_register(0x1010,0x0,1)
-
-ms=measures()
-ms.run()
+    updateip()
+    stop_event = threading.Event()
+    
+    grb=grbs(stop_event)
+    grb.start()
+    
+    gpIdx=gp(stop_event,"idx")
+    gpIdx.start()
+    
+    gpYp=gp(stop_event,"yp")
+    gpYp.start()
+    
+    gpYm=gp(stop_event,"ym")
+    gpYm.start()
+    
+    gpIdx.callback_stop=grb.soft_reset
+    gpYm.callback_stop=grb.soft_reset
+    gpYp.callback_stop=grb.soft_reset
+    
+    time.sleep(10)
+    
+    mrk=mark(stop_event)
+    mrk.start()
+    time.sleep(10)
+    #print(f'mark run is {mrk.ok}')
+    
+    cmb=ModbusSerialClient('/dev/ttyS1',parity='E')
+    cmb.connect()
+    cmb.write_register(0x1010,0x0,1)
+    
+    ms=measures()
+    #ms.run()
+    
+    app.run(debug=True)
 
 def joins():
     grb.join()
