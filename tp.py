@@ -13,6 +13,7 @@ import openpyxl as xl
 import OPi.GPIO as g
 from pymodbus.client import ModbusSerialClient
 import sqlitedict
+import ifcfg
 
 
 app = Flask(__name__)
@@ -23,9 +24,9 @@ Bootstrap(app)
 config=sqlitedict.SqliteDict('config_tf.db')
 config.autocommit=True
 
-logname='ts.log'
-xlfilename='test7sp.xlsx'
-
+logname='/home/bfg/data/ts.log'
+wanipname ="/home/bfg/data/wanip.conf"
+    
 Yfirststep=5
 Ystep=1
 Ymax=24
@@ -280,9 +281,11 @@ class mark(threading.Thread):
         return measure
 
 
-class measures():    
-
-    def __init__(self):
+class measures(threading.Thread):
+    
+    def __init__(self,stop_event):
+        threading.Thread.__init__(self)
+        self.stop_event=stop_event   
         self.atHome=False
         
     def find_edge(self):
@@ -309,16 +312,16 @@ class measures():
         forces=[]
         logInf("move y ")
         off("ena")
-        distance=(Ymax-Yfirststep)
-        grb.write(f"g91g1f1000y{Ycontact+Yfirststep}\n".encode())
+        distance=(config['lmax']-config['lmin'])
+        grb.write(f"g91g1f1000y{Ycontact+config['lmin']}\n".encode())
         #input('pause before mesure')
-        for i in range(distance//Ystep+Ystep):
-            grb.write(f"g91g1f1000y{Ystep}\n".encode())
+        for i in range(distance//config['lstep']+config['lstep']):
+            grb.write(f"g91g1f1000y{config['lstep']}\n".encode())
             time.sleep(0.1)
             force=mrk.ask()
             forces.append(force)        
-            logInf(f' dist {i*Ystep}, force {force}')
-        grb.write(f"g91g1f1000y-{distance//Ystep*Ystep+Ystep}\n".encode())
+            logInf(f' dist {i*config['lstep']}, force {force}')
+        grb.write(f"g91g1f1000y-{distance//config['lstep']*config['lstep']+config['lstep']}\n".encode())
         time.sleep(3)
         #on("ena")
         return forces
@@ -359,40 +362,22 @@ class measures():
                 logInf("датчик ym не нашли")
                 #stop_event.set()
                 
-    def  xlCreate(self):
-        if not os.path.exists(xlfilename):
-            wb=xl.Workbook()
-            ws=wb.active
-            ws.cell(row=1,column=1,value='datetime')
-            ws.cell(row=1,column=2,value='cycles')
-            column=3
-            for i in range(Yfirststep,Ymax+Ystep,Ystep): #числа только целые
-                ws.cell(row=1,column=column,value=i)
-                column+=1
-            wb.save(xlfilename)
+    #def  xlCreate(self):
+        #if not os.path.exists(xlfilename):
+            #wb=xl.Workbook()
+            #ws=wb.active
+            #ws.cell(row=1,column=1,value='datetime')
+            #ws.cell(row=1,column=2,value='cycles')
+            #column=3
+            #for i in range(Yfirststep,Ymax+Ystep,Ystep): #числа только целые
+                #ws.cell(row=1,column=column,value=i)
+                #column+=1
+            #wb.save(xlfilename)
             
             
-    def xlSaveRow(self,forces,cycle):
-        wb=xl.load_workbook(xlfilename)
-        ws=wb.active
-        for mc in range(1,mesureCycles+1):
-            if ws.cell(row=mc,column=1).value==None:
-                break
-        if mc==2:
-            cycles=0
-        else:
-            cycles=ws.cell(row=mc-1,column=2).value
-        cycles+=cycle
-        dt=datetime.datetime.now()
-        print(f'date is {dt}')
-        ws.cell(row=mc,column=1,value=dt) 
-        ws.cell(row=mc,column=2,value=cycles) 
-        for i in range(len(forces)):
-            ws.cell(row=mc,column=i+3,value=forces[i]) 
-        wb.save(xlfilename)
-        return cycles       
+  
                 
-    def run(self):
+    def run_test(self):
         off("ena")
         on("son")
     
@@ -410,7 +395,7 @@ class measures():
             time.sleep(2)
             self.find_edge()
             
-            cycles=self.xlSaveRow(self.runmesure(),cycle)
+            cycles=xlSaveRow(self.runmesure(),cycle)
             logInf(f"do {cycles} cycles")
             self.home_ym()
             if not self.atHome:
@@ -449,7 +434,54 @@ def updateip():
     with open(wanipname, "w") as the_file: 
         the_file.write(f"server_name {' '.join(ip)};\n")
 
+def xlMakeHeader():
+    wb=xl.load_workbook(config['xlfilename'])
+    ws=wb.active
+    
+    ws.cell(row=1,column=5,value='Протокол тестирования пружины')
+    ws.cell(row=1,column=10,value=datetime.datetime.now())
+    
+    row=2
+    for t in tab:
+        if t['cla']!="table-primary":
+            ws.cell(row=row,column=1,value=tab[t]['name'])
+            ws.cell(row=row,column=5,value=config[tab[t]])
+    
+    row+=1
+    
+    ws.cell(row=row,column=1,value='Дата')
+    ws.cell(row=row,column=2,value='Циклы')
+    ws.cell(row=row,column=3,value='Длина')
+    ws.cell(row=row,column=4,value='Кх')
+    ws.cell(row=row,column=5,value='Усадка')
 
+    column=6
+    for i in range(config['lmin'],config['lmax']+config['lstep'],config['lstep']): #числа только целые
+        ws.cell(row=1,column=column,value=i)
+        column+=1  
+    config['startrow']=row+1    
+    wb.save(config['xlfilename'])
+
+def xlSaveRow(self,forces,cycle):
+    wb=xl.load_workbook(config['xlfilename'])
+    ws=wb.active
+    mesureCycles=config['cycles']//config['cyclesbetween']+1
+    for mc in range(config['startrow'],config['startrow']+mesureCycles): 
+        if ws.cell(row=mc,column=1).value==None:
+            break
+    if mc==config['startrow']:
+        cycles=0
+    else:
+        cycles=ws.cell(row=mc-1,column=2).value
+    cycles+=cycle
+    dt=datetime.datetime.now()
+    print(f'date is {dt}')
+    ws.cell(row=mc,column=1,value=dt) 
+    ws.cell(row=mc,column=2,value=cycles) 
+    for i in range(len(forces)):
+        ws.cell(row=mc,column=i+6,value=forces[i]) 
+    wb.save(config['xlfilename'])
+    return cycles     
 
 #************************ flask
 
@@ -483,15 +515,17 @@ def index():
 @app.route('/newtest', methods=['GET', 'POST'])
 def execute_newtest():
     config['snum']=config.get('snum',1)+1
-    config['xlname']=f'sp{config["snum"]:06d}.xlsx'
+    config['xlfilename']=f'sp{config["snum"]:06d}.xlsx'
     wb=xl.load_workbook('sp.xlsx')
-    wb.save(config['xlname'])
+    wb.save(config['xlfilename'])
+    
+    xlMakeHeader()
     return redirect(url_for('index'))
 
 @app.route('/setspring', methods=['GET', 'POST'])
 def execute_setspring():
-    print('start setspring')
-    ra='setspring'
+    ms.home_ym()
+    ms.find_edge()
     return redirect(url_for('index'))
 
 @app.route('/runtest', methods =['GET', 'POST'])
@@ -508,7 +542,7 @@ def execute_stoptest():
 
 @app.route('/download')
 def execute_download():
-    return send_file(config['xlname'], as_attachment=True)
+    return send_file(config['xlfilename'], as_attachment=True)
 
 
 @app.route('/progress')
@@ -553,8 +587,8 @@ if __name__ == '__main__':
     cmb.connect()
     cmb.write_register(0x1010,0x0,1)
     
-    ms=measures()
-    #ms.run()
+    ms=measures(stop_event)
+    ms.run()
     
     app.run(debug=True)
 
