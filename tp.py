@@ -320,7 +320,7 @@ class measures(threading.Thread):
             time.sleep(0.1)
             force=mrk.ask()
             forces.append(force)        
-            logInf(f' dist {i*config['lstep']}, force {force}')
+            logInf(f" dist {i*config['lstep']}, force {force}")
         grb.write(f"g91g1f1000y-{distance//config['lstep']*config['lstep']+config['lstep']}\n".encode())
         time.sleep(3)
         #on("ena")
