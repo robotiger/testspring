@@ -107,9 +107,9 @@ def execute_download():
 def progress():
     def generate():
         while True:
-            yield f"data:{g.counter}\n\n"
+            #yield f"data:{g.counter}\n\n"
             
-            #yield f"data:{tp_status['progress']}\n\n"
+            yield f"data:{tp_status['progress']}\n\n"
             time.sleep(1)
     return Response(generate(), mimetype= 'text/event-stream')
 
@@ -133,6 +133,9 @@ class gp(threading.Thread):
     def run(self):
         for i in range(100):
             self.counter+=1
+            tp_status['progress']+=1
+            if tp_status['progress']>100:
+                tp_status['progress']=0
             time.sleep(2)
             if self.stp:
                 break
