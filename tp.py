@@ -16,16 +16,11 @@ import sqlitedict
 import ifcfg
 
 
-app = Flask(__name__)
-app.secret_key = 'your_ssecret_key'
-
-Bootstrap(app)
-
 config=sqlitedict.SqliteDict('config_tf.db')
-config.autocommit=True
+#config.autocommit=True
 
 logname='/home/bfg/data/ts.log'
-wanipname ="/home/bfg/data/wanip.conf"
+
     
 Yfirststep=5
 Ystep=1
@@ -416,23 +411,7 @@ class measures(threading.Thread):
 
 
 
-def updateip(): 
-    ip=[]
 
-    #получить ip адрес глобальный если есть
-    #resp=requests.get('http://api.ipify.org')
-    #if resp.status_code == 200: 
-        #ip.append(resp.text)
-    
-    #получить ip адрес локальный
-    for i in ifcfg.interfaces().items(): 
-        if not i[1]['inet'] is None: 
-            ip.append(i[1]['inet'])
-      
-    #logi(f"config wan ip {ip}")     
-    # print("store wanip", ip)
-    with open(wanipname, "w") as the_file: 
-        the_file.write(f"server_name {' '.join(ip)};\n")
 
 def xlMakeHeader():
     wb=xl.load_workbook(config['xlfilename'])
@@ -483,75 +462,7 @@ def xlSaveRow(self,forces,cycle):
     wb.save(config['xlfilename'])
     return cycles     
 
-#************************ flask
 
-@app.route('/', methods=['GET', 'POST'])
-def index():
-    if request.method == 'POST':
-        config["sname"] = request.form["sname"]
-        config["slength"] = float(request.form["slength"])
-        config["sdiameter"] = float(request.form["sdiameter"])
-        config["sdp"] = float(request.form["sdp"])
-        config["snrot"] = float(request.form["snrot"])
-        config["smatherial"] = request.form["smatherial"]
-        config["skxnom"] = float(request.form["skxnom"])
-        config["cycles"] = int(request.form["cycles"])
-        config["cyclesbetween"] = int(request.form["cyclesbetween"])
-        config["freq"] = float(request.form["freq"])
-        config["lmin"] = int(request.form["lmin"])
-        config["lmax"] = int(request.form["lmax"])
-        config["lstep"] = int(request.form["lstep"])
-    data={}
-    for x in tab:
-        data[x]=config.get(x,'')
-        
-    data['docycles']=150000
-    if data['cycles']>0:
-        config['progress']=data['docycles']*100//data['cycles']
-    else:
-        config['progress']=0
-    return render_template('index.html',**data)
-
-@app.route('/newtest', methods=['GET', 'POST'])
-def execute_newtest():
-    config['snum']=config.get('snum',1)+1
-    config['xlfilename']=f'sp{config["snum"]:06d}.xlsx'
-    wb=xl.load_workbook('sp.xlsx')
-    wb.save(config['xlfilename'])
-    
-    xlMakeHeader()
-    return redirect(url_for('index'))
-
-@app.route('/setspring', methods=['GET', 'POST'])
-def execute_setspring():
-    ms.home_ym()
-    ms.find_edge()
-    return redirect(url_for('index'))
-
-@app.route('/runtest', methods =['GET', 'POST'])
-def execute_runtest():
-    print('start setspring')
-    ra='setspring'
-    return redirect(url_for('index'))
-
-@app.route('/stoptest')
-def execute_stoptest():
-    print('start setspring')
-    ra='setspring'
-    return redirect(url_for('index'))
-
-@app.route('/download')
-def execute_download():
-    return send_file(config['xlfilename'], as_attachment=True)
-
-
-@app.route('/progress')
-def progress():
-    def generate():
-        while True:
-            yield f"data:{config['progress']}\n\n"
-            time.sleep(5)
-    return Response(generate(), mimetype= 'text/event-stream')
 
 
 # ****************main ********************
@@ -590,7 +501,7 @@ if __name__ == '__main__':
     ms=measures(stop_event)
     ms.run()
     
-    app.run(debug=True)
+
 
 def joins():
     grb.join()
