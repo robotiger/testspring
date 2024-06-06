@@ -369,7 +369,7 @@ class measures(threading.Thread):
             time.sleep(2)
             self.find_edge()
             
-            cycles=xlSaveRow(self.runmesure(),cycle)
+            cycles=self.xlSaveRow(self.runmesure(),cycle)
             logInf(f"do {cycles} cycles")
             self.home_ym()
             if not self.atHome:
