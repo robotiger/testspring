@@ -81,7 +81,7 @@ def sendstatus():
 @app.route('/newtest', methods=['GET'])
 def execute_newtest():
     config['snum']=config.get('snum',1)+1
-    config['xlname']=f'sp{config["snum"]:06d}.xlsx'
+    config['xlfilename']=f'sp{config["snum"]:06d}.xlsx'
     #wb=xl.load_workbook('sp.xlsx')
     wb=xl.Workbook()
     wb.save(config['xlname'])
