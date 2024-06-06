@@ -380,7 +380,7 @@ class measures(threading.Thread):
     
         time.sleep(5)
     
-        self.xlCreate()
+        self.xl()
         self.home_ym()
         if not self.atHome:
             self.home_ym()

@@ -71,7 +71,8 @@ def index():
 def sendstatus():
     global tp_status
     if request.method == 'POST':
-        tp_status|=request.json
+        for item in tp_status:
+            tp_status[item]=request.json.get(item)
     data={}
     for x in tab:
         data[x]=config.get(x,'')   
