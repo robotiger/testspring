@@ -380,7 +380,7 @@ class measures(threading.Thread):
     
         time.sleep(5)
     
-        self.xl()
+        self.xlMakeHeader()
         self.home_ym()
         if not self.atHome:
             self.home_ym()
@@ -410,59 +410,54 @@ class measures(threading.Thread):
         off("son")        
         
         
-
-
-
-
-
-def xlMakeHeader():
-    wb=xl.load_workbook(config['xlfilename'])
-    ws=wb.active
+    def xlMakeHeader():
+        wb=xl.load_workbook(config['xlfilename'])
+        ws=wb.active
+        
+        ws.cell(row=1,column=5,value='Протокол тестирования пружины')
+        ws.cell(row=1,column=10,value=datetime.datetime.now())
+        
+        row=2
+        for t in tab:
+            if t['cla']!="table-primary":
+                ws.cell(row=row,column=1,value=tab[t]['name'])
+                ws.cell(row=row,column=5,value=config[tab[t]])
+        
+        row+=1
+        
+        ws.cell(row=row,column=1,value='Дата')
+        ws.cell(row=row,column=2,value='Циклы')
+        ws.cell(row=row,column=3,value='Длина')
+        ws.cell(row=row,column=4,value='Кх')
+        ws.cell(row=row,column=5,value='Усадка')
     
-    ws.cell(row=1,column=5,value='Протокол тестирования пружины')
-    ws.cell(row=1,column=10,value=datetime.datetime.now())
+        column=6
+        for i in range(config['lmin'],config['lmax']+config['lstep'],config['lstep']): #числа только целые
+            ws.cell(row=1,column=column,value=i)
+            column+=1  
+        config['startrow']=row+1    
+        wb.save(config['xlfilename'])
     
-    row=2
-    for t in tab:
-        if t['cla']!="table-primary":
-            ws.cell(row=row,column=1,value=tab[t]['name'])
-            ws.cell(row=row,column=5,value=config[tab[t]])
-    
-    row+=1
-    
-    ws.cell(row=row,column=1,value='Дата')
-    ws.cell(row=row,column=2,value='Циклы')
-    ws.cell(row=row,column=3,value='Длина')
-    ws.cell(row=row,column=4,value='Кх')
-    ws.cell(row=row,column=5,value='Усадка')
-
-    column=6
-    for i in range(config['lmin'],config['lmax']+config['lstep'],config['lstep']): #числа только целые
-        ws.cell(row=1,column=column,value=i)
-        column+=1  
-    config['startrow']=row+1    
-    wb.save(config['xlfilename'])
-
-def xlSaveRow(self,forces,cycle):
-    wb=xl.load_workbook(config['xlfilename'])
-    ws=wb.active
-    mesureCycles=config['cycles']//config['cyclesbetween']+1
-    for mc in range(config['startrow'],config['startrow']+mesureCycles): 
-        if ws.cell(row=mc,column=1).value==None:
-            break
-    if mc==config['startrow']:
-        cycles=0
-    else:
-        cycles=ws.cell(row=mc-1,column=2).value
-    cycles+=cycle
-    dt=datetime.datetime.now()
-    print(f'date is {dt}')
-    ws.cell(row=mc,column=1,value=dt) 
-    ws.cell(row=mc,column=2,value=cycles) 
-    for i in range(len(forces)):
-        ws.cell(row=mc,column=i+6,value=forces[i]) 
-    wb.save(config['xlfilename'])
-    return cycles     
+    def xlSaveRow(self,forces,cycle):
+        wb=xl.load_workbook(config['xlfilename'])
+        ws=wb.active
+        mesureCycles=config['cycles']//config['cyclesbetween']+1
+        for mc in range(config['startrow'],config['startrow']+mesureCycles): 
+            if ws.cell(row=mc,column=1).value==None:
+                break
+        if mc==config['startrow']:
+            cycles=0
+        else:
+            cycles=ws.cell(row=mc-1,column=2).value
+        cycles+=cycle
+        dt=datetime.datetime.now()
+        print(f'date is {dt}')
+        ws.cell(row=mc,column=1,value=dt) 
+        ws.cell(row=mc,column=2,value=cycles) 
+        for i in range(len(forces)):
+            ws.cell(row=mc,column=i+6,value=forces[i]) 
+        wb.save(config['xlfilename'])
+        return cycles     
 
 
 
