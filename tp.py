@@ -14,6 +14,8 @@ import OPi.GPIO as g
 from pymodbus.client import ModbusSerialClient
 import sqlitedict
 import ifcfg
+import requests
+
 
 
 config=sqlitedict.SqliteDict('config_tf.db')
@@ -499,8 +501,37 @@ if __name__ == '__main__':
     cmb.write_register(0x1010,0x0,1)
     
     ms=measures(stop_event)
-    ms.run()
-    
+    #ms.run()
+
+    nothing='nothing'
+    while(True):
+        res=requests.get('http://localhost:5000/status')
+        if res.ok:
+            status=res.json()
+            
+        to_do=status.get('to_do',nothing)
+        
+        if to_do=='newtest':
+            xlMakeHeader()
+            status['to_do']=nothing
+
+        if to_do=='setspring':
+            ms.find_edge()
+            ms.home_ym()
+            status['to_do']=nothing
+            
+        if to_do=='runtest':
+            ms.run_test()
+            status['to_do']=nothing            
+            
+        
+            
+        status['cycles_done']=config["cycles"]-gpIdx.count
+        if status['cycles_done']>0
+        status['progress']=status['cycles_done']*100//config["cycles"]
+        
+        rr=requests.post('http://localhost:5000/status',json=status) 
+        
 
 
 def joins():

@@ -36,14 +36,14 @@ tab={ "snum":{"name":"Номер теста","typ":int,"cla":""},
 "lmax":{"name":"Максимальное сжатие","typ":int,"cla":"table-success"},
 "lstep":{"name":"Шаг измерения усилия пружины","typ":int,"cla":"table-success"},
 "docycles":{"name":"Выполнено циклов сжатия","typ":int,"cla":"table-primary"},
-"clen":{"name":"Расчетная длина пружины","typ":float,"cla":"table-primary"},
+"clength":{"name":"Расчетная длина пружины","typ":float,"cla":"table-primary"},
 "ckx":{"name":"Коэффициент жесткости","typ":float,"cla":"table-primary"},
 "shrink":{"name":"Усадка","typ":float,"cla":"table-primary"},
     }
 
 
-tp_status={"progress":0,"cycles_done":0,"to_do":"nothing"}
-
+tp_status={"progress":0,"cycles_done":0,"to_do":"nothing","clength":0,"ckx":0,"shrink":0}
+tmp={}
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -61,13 +61,17 @@ def index():
         config["lmin"] = int(request.form["lmin"])
         config["lmax"] = int(request.form["lmax"])
         config["lstep"] = int(request.form["lstep"])
-    data={}
+    config_data={}
     for x in tab:
-        data[x]=config.get(x,'')
-    return render_template('index.html',**data|tp_status)
+        config_data[x]=config.get(x,'')
 
-@app.route('/status')
+    return render_template('index.html',**(config_data|tp_status))
+
+@app.route('/status',methods=['GET', 'POST'])
 def sendstatus():
+    global tp_status
+    if request.method == 'POST':
+        tp_status|=request.json
     data={}
     for x in tab:
         data[x]=config.get(x,'')   
@@ -102,7 +106,6 @@ def execute_stoptest():
 def execute_download():
     return send_file(config['xlname'], as_attachment=True)
 
-
 @app.route('/update_software',methods =['GET'])
 def execute_update():
     tp_todo="update_software"
@@ -113,49 +116,34 @@ def execute_reboot():
     '            <li class="nav-item"> <a class="nav-link"          href="/reboot">Перезагрузить</a>  </li>'
     tp_todo="reboot"
     return redirect(url_for('index'))
-
-
-
-@app.route('/progress',methods =['GET'])
-def progress():
-    def generate():
-        while True:
-            #yield f"data:{g.counter}\n\n"
-            
-            yield f"data:{tp_status['progress']}\n\n"
-            time.sleep(1)
-    return Response(generate(), mimetype= 'text/event-stream')
-
-    
+  
 @app.route('/progressbar',methods =['GET','POST'])
 def progressbar():
-    
     return  jsonify(tp_status)
 
-class gp(threading.Thread):
-    def __init__(self):
-        threading.Thread.__init__(self)
-        self.counter=0
-        self.stp=False
-    def run(self):
-        for i in range(100000):
-            self.counter+=1
-            tp_status['cycles_done']+=1000
-            tp_status['progress']+=1
-            if tp_status['progress']>100:
-                tp_status['progress']=0
-            print(tp_status)
-            time.sleep(2)
-            if self.stp:
-                break
-    def stop(self):
-        self.stp=True
+#class gp(threading.Thread):
+    #def __init__(self):
+        #threading.Thread.__init__(self)
+        #self.counter=0
+        #self.stp=False
+    #def run(self):
+        #for i in range(100000):
+            #self.counter+=1
+            #tp_status['cycles_done']+=1000
+            #tp_status['progress']+=1
+            #if tp_status['progress']>100:
+                #tp_status['progress']=0
+            #print(tp_status)
+            #print(tmp)
+            #time.sleep(2)
+            #if self.stp:
+                #break
+    #def stop(self):
+        #self.stp=True
         
-
-
 if __name__ == '__main__':
-    g=gp()
-    g.start()
+    #g=gp()
+    #g.start()
     
     #обновить ip адрес для сервера nginx
     with open(wanipname, "w") as the_file: 
@@ -164,16 +152,4 @@ if __name__ == '__main__':
     app.wsgi_app = ProxyFix(app.wsgi_app)    
     app.run(debug=True)
     
-"""
-    var source = new EventSource("/progress");
-    source.onmessage = function(event) {
-            $('.progress-bar').css('width', event.data+'%').attr('aria-valuenow', event.data);
-                $('.progress-bar-label').text(event.data+'%');
-                if(event.data == 100){
-                    source.close()
-                }
-        }
-    </script>    
 
-
-"""

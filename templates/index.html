@@ -4,13 +4,11 @@
     <meta charset="UTF-8">
     <title>Стенд испытания пружин</title>
     <!-- Подключаем CSS Bootstrap -->
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
-    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
 
     <script>
-
     var udateTimer = setInterval(updateProgressbar,1000);                    
     function updateProgressbar()                 
         {
@@ -19,9 +17,12 @@
             .then(
             (data) => 
             {
-               $('.progress-bar').css('width', data['progress']+'%').attr('aria-valuenow', data['progress']);
+               $('.progress-bar').css('width', data.progress+'%').attr('aria-valuenow', data.progress);
                $('.progress-bar-label').text(data.progress+'%');
                $('.cycles_done').text(data.cycles_done);
+               $('.clength').text(data.clength);
+               $('.ckx').text(data.ckx);
+               $('.shrink').text(data.shrink);
             }    
             )
         }
@@ -68,10 +69,10 @@
                 <tr class="table-success"> <th>Начальное сжатие</th>                       <th>  <input type="number"            id="lmin"          name="lmin"        class="form-control"    value={{lmin}}> </th>  </tr>
                 <tr class="table-success"> <th>Максимальное сжатие</th>                    <th>  <input type="number"            id="lmax"          name="lmax"        class="form-control"    value={{lmax}}> </th>  </tr>
                 <tr class="table-success"> <th>Шаг измерения усилия пружины</th>           <th>  <input type="number"            id="lstep"         name="lstep"       class="form-control"    value={{lstep}} > </th>  </tr>
-                <tr class="table-primary"> <th>Выполнено циклов сжатия</th>                <th>  <span class="cycles_done">{{cycles_done}}</span>  </th>  </tr>
-                <tr class="table-primary"> <th>Расчетная длина пружины</th>                <th>  {{clen}}  </th>  </tr>
-                <tr class="table-primary"> <th>Коэффициент жесткости</th>                  <th>  {{ckx}}  </th>  </tr>
-                <tr class="table-primary"> <th>Усадка</th>                                 <th>  {{shrink}}  </th>  </tr>
+                <tr class="table-primary"> <th>Выполнено циклов сжатия</th>                <th>  <span class="cycles_done"> {{cycles_done}}</span>  </th>  </tr>
+                <tr class="table-primary"> <th>Расчетная длина пружины</th>                <th>  <span class="clength"      {{clength}}       </span>  </th>  </tr>
+                <tr class="table-primary"> <th>Коэффициент жесткости</th>                  <th>  <span class="ckx"          {{ckx}}        </span>  </th>  </tr>
+                <tr class="table-primary"> <th>Усадка</th>                                 <th>  <span class="shrink"       {{shrink}}     </span> </th>  </tr>
               </tbody>
             </table>        
    
