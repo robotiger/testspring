@@ -523,14 +523,13 @@ if __name__ == '__main__':
         if to_do=='runtest':
             ms.run_test()
             status['to_do']=nothing            
-            
-        
-            
+   
         status['cycles_done']=config["cycles"]-gpIdx.count
         if status['cycles_done']>0:
             status['progress']=status['cycles_done']*100//config["cycles"]
         
         rr=requests.post('http://localhost:5000/status',json=status) 
+        time.sleep(1)
         
 
 
