@@ -411,7 +411,7 @@ class measures(threading.Thread):
         
         
     def xlMakeHeader(self):
-        if os.path.exist(config['xlfilename']):
+        if os.path.exists(config['xlfilename']):
             wb=xl.load_workbook(config['xlfilename'])
         else:
             wb=xl.Workbook()
