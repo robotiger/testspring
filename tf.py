@@ -84,22 +84,22 @@ def execute_newtest():
     #wb=xl.load_workbook('sp.xlsx')
     wb=xl.Workbook()
     wb.save(config['xlname'])
-    tp_todo="newtest"
+    tp_status['to_do']="newtest"
     return redirect(url_for('index'))
 
 @app.route('/setspring', methods=['GET'])
 def execute_setspring():
-    tp_todo="setspring"
+    tp_status['to_do']="setspring"
     return redirect(url_for('index'))
 
 @app.route('/runtest', methods =['GET'])
 def execute_runtest():
-    tp_todo="runtest"
+    tp_status['to_do']="runtest"
     return redirect(url_for('index'))
 
 @app.route('/stoptest',methods =['GET'])
 def execute_stoptest():
-    tp_todo="stoptest"
+    tp_status['to_do']="stoptest"
     return redirect(url_for('index'))
 
 @app.route('/download',methods =['GET'])
@@ -108,13 +108,13 @@ def execute_download():
 
 @app.route('/update_software',methods =['GET'])
 def execute_update():
-    tp_todo="update_software"
+    tp_status['to_do']="update_software"
     return redirect(url_for('index'))
 
 @app.route('/reboot',methods =['GET'])
 def execute_reboot():
     '            <li class="nav-item"> <a class="nav-link"          href="/reboot">Перезагрузить</a>  </li>'
-    tp_todo="reboot"
+    tp_status['to_do']="reboot"
     return redirect(url_for('index'))
   
 @app.route('/progressbar',methods =['GET','POST'])
