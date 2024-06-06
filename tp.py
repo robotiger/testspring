@@ -417,7 +417,7 @@ class measures(threading.Thread):
         
         for t in tab:
             ws.cell(row=row,column=1,value=tab[t])
-            ws.cell(row=row,column=5,value=config[tab[t]])
+            ws.cell(row=row,column=5,value=config[t])
         
         row+=1
         
