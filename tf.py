@@ -136,6 +136,7 @@ class gp(threading.Thread):
             tp_status['progress']+=1
             if tp_status['progress']>100:
                 tp_status['progress']=0
+            print(tp_status)
             time.sleep(2)
             if self.stp:
                 break
