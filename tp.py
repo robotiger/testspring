@@ -508,6 +508,7 @@ if __name__ == '__main__':
         res=requests.get('http://localhost:5000/status')
         if res.ok:
             status=res.json()
+        print(status)
             
         to_do=status.get('to_do',nothing)
         
