@@ -103,16 +103,6 @@ def execute_download():
     return send_file(config['xlname'], as_attachment=True)
 
 
-@app.route('/progress',methods =['GET'])
-def progress():
-    def generate():
-        while True:
-            #yield f"data:{g.counter}\n\n"
-            
-            yield f"data:{tp_status['progress']}\n\n"
-            time.sleep(1)
-    return Response(generate(), mimetype= 'text/event-stream')
-
 @app.route('/update_software',methods =['GET'])
 def execute_update():
     tp_todo="update_software"
@@ -125,14 +115,32 @@ def execute_reboot():
     return redirect(url_for('index'))
 
 
+
+@app.route('/progress',methods =['GET'])
+def progress():
+    def generate():
+        while True:
+            #yield f"data:{g.counter}\n\n"
+            
+            yield f"data:{tp_status['progress']}\n\n"
+            time.sleep(1)
+    return Response(generate(), mimetype= 'text/event-stream')
+
+    
+@app.route('/progressbar',methods =['GET','POST'])
+def progressbar():
+    
+    return  jsonify(tp_status)
+
 class gp(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
         self.counter=0
         self.stp=False
     def run(self):
-        for i in range(100):
+        for i in range(100000):
             self.counter+=1
+            tp_status['cycles_done']+=1000
             tp_status['progress']+=1
             if tp_status['progress']>100:
                 tp_status['progress']=0
@@ -156,4 +164,16 @@ if __name__ == '__main__':
     app.wsgi_app = ProxyFix(app.wsgi_app)    
     app.run(debug=True)
     
+"""
+    var source = new EventSource("/progress");
+    source.onmessage = function(event) {
+            $('.progress-bar').css('width', event.data+'%').attr('aria-valuenow', event.data);
+                $('.progress-bar-label').text(event.data+'%');
+                if(event.data == 100){
+                    source.close()
+                }
+        }
+    </script>    
 
+
+"""
