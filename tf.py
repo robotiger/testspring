@@ -103,7 +103,7 @@ def execute_stoptest():
 
 @app.route('/download',methods =['GET'])
 def execute_download():
-    return send_file(config['xlname'], as_attachment=True)
+    return send_file(config['xlfilename'], as_attachment=True)
 
 @app.route('/update_software',methods =['GET'])
 def execute_update():
