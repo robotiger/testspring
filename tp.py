@@ -410,7 +410,7 @@ class measures(threading.Thread):
         off("son")        
         
         
-    def xlMakeHeader():
+    def xlMakeHeader(self):
         wb=xl.load_workbook(config['xlfilename'])
         ws=wb.active
         
