@@ -411,7 +411,11 @@ class measures(threading.Thread):
         
         
     def xlMakeHeader(self):
-        wb=xl.load_workbook(config['xlfilename'])
+        if os.path.exist(config['xlfilename']):
+            wb=xl.load_workbook(config['xlfilename'])
+        else:
+            wb=xl.Workbook()
+        
         ws=wb.active
         
         ws.cell(row=1,column=5,value='Протокол тестирования пружины')
