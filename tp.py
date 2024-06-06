@@ -527,8 +527,8 @@ if __name__ == '__main__':
         
             
         status['cycles_done']=config["cycles"]-gpIdx.count
-        if status['cycles_done']>0
-        status['progress']=status['cycles_done']*100//config["cycles"]
+        if status['cycles_done']>0:
+            status['progress']=status['cycles_done']*100//config["cycles"]
         
         rr=requests.post('http://localhost:5000/status',json=status) 
         
