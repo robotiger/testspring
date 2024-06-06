@@ -36,29 +36,6 @@ mesureCycles=20
 maxspeed=2500
 runspeed=1200
 
-tab={ "snum":{"name":"Номер теста","typ":int,"cla":""},
-"sname":{"name":"Наименование","typ":str,"cla":"table-active"},
-"slength":{"name":"Длина","typ":float,"cla":"table-active"},
-"sdiameter":{"name":"Диаметр пружины","typ":float,"cla":"table-active"},
-"sdp":{"name":"Толщина прутка","typ":float,"cla":"table-active"},
-"snrot":{"name":"Число витков","typ":float,"cla":"table-active"},
-"smatherial":{"name":"Материал","typ":str,"cla":"table-active"},
-"skxnom":{"name":"Номинальный коэфф жесткости","typ":float,"cla":"table-success"},
-"cycles":{"name":"Число циклов сжатия","typ":int,"cla":"table-success"},
-"cyclesbetween":{"name":"Число циклов сжатия между измерениями","typ":int,"cla":"table-success"},
-"freq":{"name":"Частота сжатия","typ":float,"cla":"table-success"},
-"lmin":{"name":"Начальное сжатие","typ":int,"cla":"table-success"},
-"lmax":{"name":"Максимальное сжатие","typ":int,"cla":"table-success"},
-"lstep":{"name":"Шаг измерения усилия пружины","typ":int,"cla":"table-success"},
-"docycles":{"name":"Выполнено циклов сжатия","typ":int,"cla":"table-primary"},
-"clen":{"name":"Расчетная длина пружины","typ":float,"cla":"table-primary"},
-"ckx":{"name":"Коэффициент жесткости","typ":float,"cla":"table-primary"},
-"shrink":{"name":"Усадка","typ":float,"cla":"table-primary"},
-    }
-
-
-
-
 
 grb=None
 gpp=None
@@ -422,10 +399,25 @@ class measures(threading.Thread):
         ws.cell(row=1,column=10,value=datetime.datetime.now())
         
         row=2
+        tab={'snum': 'Номер теста',
+         'sname': 'Наименование',
+         'slength': 'Длина',
+         'sdiameter': 'Диаметр пружины',
+         'sdp': 'Толщина прутка',
+         'snrot': 'Число витков',
+         'smatherial': 'Материал',
+         'skxnom': 'Номинальный коэфф жесткости',
+         'cycles': 'Число циклов сжатия',
+         'cyclesbetween': 'Число циклов сжатия между измерениями',
+         'freq': 'Частота сжатия',
+         'lmin': 'Начальное сжатие',
+         'lmax': 'Максимальное сжатие',
+         'lstep': 'Шаг измерения усилия пружины',
+         }
+        
         for t in tab:
-            if t['cla']!="table-primary":
-                ws.cell(row=row,column=1,value=tab[t]['name'])
-                ws.cell(row=row,column=5,value=config[tab[t]])
+            ws.cell(row=row,column=1,value=tab[t])
+            ws.cell(row=row,column=5,value=config[tab[t]])
         
         row+=1
         
