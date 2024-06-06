@@ -470,7 +470,7 @@ def xlSaveRow(self,forces,cycle):
 # ****************main ********************
 if __name__ == '__main__':
 
-    updateip()
+
     stop_event = threading.Event()
     
     grb=grbs(stop_event)
