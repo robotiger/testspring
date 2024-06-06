@@ -507,9 +507,6 @@ if __name__ == '__main__':
             
         to_do=status.get('to_do',nothing)
         
-        if to_do=='newtest':
-            xlMakeHeader()
-            status['to_do']=nothing
 
         if to_do=='setspring':
             ms.find_edge()
