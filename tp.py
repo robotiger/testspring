@@ -434,7 +434,7 @@ class measures(threading.Thread):
         column=6
         self.sx=list(range(config['lmin'],config['lmax']+config['lstep'],config['lstep']))
         
-        for i in sx: 
+        for i in self.sx: 
             #числа только целые пока
             ws.cell(row=row,column=column,value=i)
             column+=1  
