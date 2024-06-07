@@ -558,12 +558,13 @@ if __name__ == '__main__':
     cmb.write_register(0x1010,0x0,1)
     
     ms=measures(stop_event)
-    #ms.run()
+    
     web=webrun(stop_event)
     web.start()
 
     while(True):
 
+        print(f"main {status['to_do']}")
         if status['to_do']=='setspring':
             ms.find_edge()
             ms.home_ym()
