@@ -265,6 +265,7 @@ class measures(threading.Thread):
         threading.Thread.__init__(self)
         self.stop_event=stop_event   
         self.atHome=False
+        self.sx=[]
         
     def find_edge(self):
         logInf("start find edge")
@@ -290,24 +291,26 @@ class measures(threading.Thread):
         runmb(0)
 
     def runmesure(self):
-        forces=[]
+        self.forces=[]
         logInf("move y ")
         off("ena")
         
         grb.write(f"g91g1f1000y{Ycontact+config['lmin']-config['lstep']}\n")
         #input('pause before mesure')
-        for i in config['sx']:
+        time.sleep(0.1)
+        force=mrk.ask()
+        for i in self.sx:
             grb.write(f"g91g1f1000y{config['lstep']}\n".encode())
             time.sleep(0.1)
             force=mrk.ask()
-            forces.append(force) 
+            self.forces.append(force) 
 
-            logInf(f" dist {i*config['lstep']}, force {force}")
+            logInf(f" dist {config['lmax']}, force {force}")
 
-        grb.write(f"g91g1f1000y-{i}\n".encode())
-        time.sleep(3)
+        grb.write(f"g91g1f1000y-{config['lmax']}\n".encode())
+        time.sleep(5)
         #on("ena")
-        return forces
+
     
     
     
@@ -344,22 +347,7 @@ class measures(threading.Thread):
             else:
                 logInf("датчик ym не нашли")
                 #stop_event.set()
-                
-    #def  xlCreate(self):
-        #if not os.path.exists(xlfilename):
-            #wb=xl.Workbook()
-            #ws=wb.active
-            #ws.cell(row=1,column=1,value='datetime')
-            #ws.cell(row=1,column=2,value='cycles')
-            #column=3
-            #for i in range(Yfirststep,Ymax+Ystep,Ystep): #числа только целые
-                #ws.cell(row=1,column=column,value=i)
-                #column+=1
-            #wb.save(xlfilename)
-            
-            
-  
-                
+                                
     def run_test(self):
         off("ena")
         on("son")
@@ -392,7 +380,8 @@ class measures(threading.Thread):
             if status['to_do']=='stoptest':
                 break                 
         
-            if config['cycles_complete']>config["cycles"]:
+            if config['cycles_complete']>=config["cycles"]:
+                status['to_do']='nothing'
                 break
             if stop_event.is_set():
                 break
@@ -410,8 +399,8 @@ class measures(threading.Thread):
         
         ws=wb.active
         
-        ws.cell(row=1,column=5,value='Протокол тестирования пружины')
-        ws.cell(row=1,column=10,value=datetime.datetime.now())
+        ws.cell(row=1,column=2,value='Протокол тестирования пружины')
+        ws.cell(row=1,column=1,value=datetime.datetime.now())
         
         row=2
         tab={
@@ -443,12 +432,10 @@ class measures(threading.Thread):
         ws.cell(row=row,column=5,value='Усадка')
     
         column=6
-        sx=list(range(config['lmin'],config['lmax']+config['lstep'],config['lstep']))
-        config['sx']=sx
-        config.commit()
+        self.sx=list(range(config['lmin'],config['lmax']+config['lstep'],config['lstep']))
+        
         for i in sx: 
             #числа только целые пока
-            
             ws.cell(row=row,column=column,value=i)
             column+=1  
         config['startrow']=row+1    
@@ -463,7 +450,7 @@ class measures(threading.Thread):
         gpIdx.count=config["cyclesbetween"] #чтобы прогресс не скакал а двигался плавно
         mc=config['startrow']
         
-        sx=np.array(config['sx'])
+        sx=np.array(self.sx)
         sf=np.array(forces)
         
         #немного расчетов
@@ -482,7 +469,7 @@ class measures(threading.Thread):
         ws.cell(row=mc,column=2,value=config['cycles_complete']) 
         ws.cell(row=mc,column=3,value=clength) 
         ws.cell(row=mc,column=4,value=ckx) 
-        ws.cell(row=mc,column=4,value=config['slength']-clength) 
+        ws.cell(row=mc,column=5,value=config['slength']-clength) 
         
         
         for i in range(len(forces)):
@@ -573,15 +560,16 @@ if __name__ == '__main__':
     while(True):
 
         print(f"main {status['to_do']}")
+        
         if status['to_do']=='setspring':
             ms.find_edge()
             ms.home_ym()
             status['to_do']='nothing'
             
         if status['to_do']=='runtest':
-            ms.run_test()
+            if config['cycles_complete']<config["cycles"]:
+                ms.run_test()
             status['to_do']='nothing'            
-   
 
         time.sleep(1)
         
