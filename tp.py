@@ -16,7 +16,7 @@ import sqlitedict
 import ifcfg
 import requests
 import numpy as np
-import scipy as sc
+from scipy.optimize import minimize
 
 
 
@@ -502,7 +502,7 @@ class webrun(threading.Thread):
                     newstatus=res.json()
                     res_ok=res.ok
                 status['to_do']=newstatus['to_do']
-                print("got status to_do {newstatus['to_do']}")
+                #print(f"got status to_do {newstatus['to_do']}")
             except:
                 print("отключено приложение веб")
             if res_ok:
@@ -517,7 +517,7 @@ class webrun(threading.Thread):
                     status['progress']=0
                 try:
                     rr=requests.post('http://localhost:5000/status',json=status) 
-                    print("sent status {status}")
+                    #print(f"sent status {status}")
                     
                 except:
                     print("отключено приложение веб")            
