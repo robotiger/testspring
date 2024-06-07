@@ -290,17 +290,18 @@ class measures(threading.Thread):
         forces=[]
         logInf("move y ")
         off("ena")
-        distance=(config['lmax']-config['lmin'])
-        grb.write(f"g91g1f1000y{Ycontact+config['lmin']}\n".encode())
+        
+        grb.write(f"g91g1f1000y{Ycontact+config['lmin']-config['lstep']}\n")
         #input('pause before mesure')
-        for i in range(distance//config['lstep']):
-
+        for i in config['sx']:
             grb.write(f"g91g1f1000y{config['lstep']}\n".encode())
             time.sleep(0.1)
             force=mrk.ask()
-            forces.append(force)        
+            forces.append(force) 
+
             logInf(f" dist {i*config['lstep']}, force {force}")
-        grb.write(f"g91g1f1000y-{i*config['lstep']}\n".encode())
+
+        grb.write(f"g91g1f1000y-{i}\n".encode())
         time.sleep(3)
         #on("ena")
         return forces
@@ -440,6 +441,7 @@ class measures(threading.Thread):
         column=6
         sx=list(range(config['lmin'],config['lmax']+config['lstep'],config['lstep']))
         config['sx']=sx
+        config.commit()
         for i in sx: 
             #числа только целые пока
             
