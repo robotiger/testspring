@@ -450,6 +450,7 @@ class measures(threading.Thread):
         gpIdx.count=config["cyclesbetween"] #чтобы прогресс не скакал а двигался плавно
         mc=config['startrow']
         
+        self.sx=list(range(config['lmin'],config['lmax']+config['lstep'],config['lstep']))
         sx=np.array(self.sx)
         sf=np.array(forces)
         
