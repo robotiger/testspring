@@ -399,7 +399,8 @@ class measures(threading.Thread):
         ws.cell(row=1,column=10,value=datetime.datetime.now())
         
         row=2
-        tab={'snum': 'Номер теста',
+        tab={
+         'snum': 'Номер теста',
          'sname': 'Наименование',
          'slength': 'Длина',
          'sdiameter': 'Диаметр пружины',
@@ -418,8 +419,7 @@ class measures(threading.Thread):
         for t in tab:
             ws.cell(row=row,column=1,value=tab[t])
             ws.cell(row=row,column=5,value=config[t])
-        
-        row+=1
+            row+=1
         
         ws.cell(row=row,column=1,value='Дата')
         ws.cell(row=row,column=2,value='Циклы')
@@ -428,8 +428,9 @@ class measures(threading.Thread):
         ws.cell(row=row,column=5,value='Усадка')
     
         column=6
-        for i in range(config['lmin'],config['lmax']+config['lstep'],config['lstep']): #числа только целые
-            ws.cell(row=1,column=column,value=i)
+        for i in range(config['lmin'],config['lmax']+config['lstep'],config['lstep']): 
+            #числа только целые пока
+            ws.cell(row=row,column=column,value=i)
             column+=1  
         config['startrow']=row+1    
         wb.save(config['xlfilename'])
@@ -455,6 +456,32 @@ class measures(threading.Thread):
         wb.save(config['xlfilename'])
         return cycles     
 
+
+class gp(threading.Thread):
+    def __init__(self,stop_event,pin):
+        threading.Thread.__init__(self)
+        self.stop_event=stop_event
+
+    def run():
+        nothing='nothing'
+        while(not self.stop_event.is_set()):
+            res=requests.get('http://localhost:5000/status')
+            if res.ok:
+                status=res.json()
+            print(status)
+                
+            if gpIdx.count>=0:
+                status['cycles_done']=config["cycles"]-gpIdx.count
+            else:
+                status['cycles_done']=0
+                
+            if status['cycles_done']>0:
+                status['progress']=status['cycles_done']*100//config["cycles"]
+            else:
+                status['progress']=0
+            
+            rr=requests.post('http://localhost:5000/status',json=status)             
+    
 
 
 
@@ -494,15 +521,7 @@ if __name__ == '__main__':
     ms=measures(stop_event)
     #ms.run()
 
-    nothing='nothing'
     while(True):
-        res=requests.get('http://localhost:5000/status')
-        if res.ok:
-            status=res.json()
-        print(status)
-            
-        to_do=status.get('to_do',nothing)
-        
 
         if to_do=='setspring':
             ms.find_edge()
@@ -513,11 +532,7 @@ if __name__ == '__main__':
             ms.run_test()
             status['to_do']=nothing            
    
-        status['cycles_done']=config["cycles"]-gpIdx.count
-        if status['cycles_done']>0:
-            status['progress']=status['cycles_done']*100//config["cycles"]
-        
-        rr=requests.post('http://localhost:5000/status',json=status) 
+
         time.sleep(1)
         
 
