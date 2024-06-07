@@ -488,7 +488,7 @@ class measures(threading.Thread):
 
 
 class webrun(threading.Thread):
-    def __init__(self,stop_event,pin):
+    def __init__(self,stop_event):
         threading.Thread.__init__(self)
         self.stop_event=stop_event
 
@@ -552,7 +552,7 @@ if __name__ == '__main__':
     
     ms=measures(stop_event)
     #ms.run()
-    web=webrun()
+    web=webrun(stop_event)
     web.start()
 
     while(True):
