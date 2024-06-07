@@ -502,6 +502,7 @@ class webrun(threading.Thread):
                     newstatus=res.json()
                     res_ok=res.ok
                 status['to_do']=newstatus['to_do']
+                print(newstatus)
             except:
                 print("отключено приложение веб")
             if res_ok:
