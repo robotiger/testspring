@@ -492,7 +492,7 @@ class webrun(threading.Thread):
         threading.Thread.__init__(self)
         self.stop_event=stop_event
 
-    def run():
+    def run(self):
         global status
         nothing='nothing'
         while(not self.stop_event.is_set()):
