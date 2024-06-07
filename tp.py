@@ -458,12 +458,9 @@ class measures(threading.Thread):
         mc=config['startrow']
         
         #немного расчетов
-        sx=np.array(config['sx'])
-        sf=np.array(forces)
-        
-        def f(x,sx,sn):
-            return ((sx*x[0]+x[1]-sn)**2).sum()
-        res=minimize(f,x0=[3,3],args=(sx,sn))
+        def f(x,sx,sf):
+            return ((sx*x[0]+x[1]-sf)**2).sum()
+        res=minimize(f,x0=[3,3],args=(np.array(config['sx']),np.array(forces)))
         ckx=res.x[0]
         clength=res.x[1]/res.x[0]+config["ldistance"]
         # сохраняем результаты расчета в статус для обновления веб страницы
