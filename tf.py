@@ -39,6 +39,7 @@ tab={ "snum":{"name":"Номер теста","typ":int,"cla":""},
 "clength":{"name":"Расчетная длина пружины","typ":float,"cla":"table-primary"},
 "ckx":{"name":"Коэффициент жесткости","typ":float,"cla":"table-primary"},
 "shrink":{"name":"Усадка","typ":float,"cla":"table-primary"},
+"ldistance":{"name":"Длина поджатой пружины","typ":int,"cla":"table-success"},
     }
 
 
