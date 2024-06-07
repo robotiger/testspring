@@ -457,10 +457,13 @@ class measures(threading.Thread):
         gpIdx.count=config["cyclesbetween"] #чтобы прогресс не скакал а двигался плавно
         mc=config['startrow']
         
+        sx=np.array(config['sx'])
+        sf=np.array(forces)
+        
         #немного расчетов
         def f(x,sx,sf):
             return ((sx*x[0]+x[1]-sf)**2).sum()
-        res=minimize(f,x0=[3,3],args=(np.array(config['sx']),np.array(forces)))
+        res=minimize(f,x0=[3,3],args=(sx,sf))
         ckx=res.x[0]
         clength=res.x[1]/res.x[0]+config["ldistance"]
         # сохраняем результаты расчета в статус для обновления веб страницы
