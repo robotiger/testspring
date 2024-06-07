@@ -26,11 +26,11 @@ config=sqlitedict.SqliteDict('config_tf.db')
 logname='/home/bfg/data/ts.log'
 
     
-Yfirststep=5
-Ystep=1
-Ymax=24
+#Yfirststep=5
+#Ystep=1
+#Ymax=24
 
-Ycontact=28
+Ycontact=27.5
 Fkr=200 
 
 totalCycles=200
@@ -502,7 +502,7 @@ class webrun(threading.Thread):
                     newstatus=res.json()
                     res_ok=res.ok
                 status['to_do']=newstatus['to_do']
-                print(newstatus)
+                print("got status to_do {newstatus['to_do']}")
             except:
                 print("отключено приложение веб")
             if res_ok:
@@ -517,6 +517,8 @@ class webrun(threading.Thread):
                     status['progress']=0
                 try:
                     rr=requests.post('http://localhost:5000/status',json=status) 
+                    print("sent status {status}")
+                    
                 except:
                     print("отключено приложение веб")            
             time.sleep(1)
