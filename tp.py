@@ -463,7 +463,7 @@ class measures(threading.Thread):
         
         def f(x,sx,sn):
             return ((sx*x[0]+x[1]-sn)**2).sum()
-        res=minimize(f,x0=x,args=(sx,sn))
+        res=minimize(f,x0=[3,3],args=(sx,sn))
         ckx=res.x[0]
         clength=res.x[1]/res.x[0]+config["ldistance"]
         # сохраняем результаты расчета в статус для обновления веб страницы
