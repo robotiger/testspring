@@ -453,7 +453,7 @@ class measures(threading.Thread):
         
         self.sx=list(range(config['lmin'],config['lmax']+config['lstep'],config['lstep']))
         sx=np.array(self.sx)
-        sf=np.array(forces)
+        sf=np.array(self.forces)
         
         #немного расчетов
         def f(x,sx,sf):
@@ -475,7 +475,7 @@ class measures(threading.Thread):
         
         
         for i in range(len(forces)):
-            ws.cell(row=mc,column=i+6,value=forces[i]) 
+            ws.cell(row=mc,column=i+6,value=self.forces[i]) 
             
         config['startrow']+=1
         wb.save(config['xlfilename'])
