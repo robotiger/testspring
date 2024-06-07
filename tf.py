@@ -35,7 +35,7 @@ tab={ "snum":{"name":"Номер теста","typ":int,"cla":""},
 "lmin":{"name":"Начальное сжатие","typ":int,"cla":"table-success"},
 "lmax":{"name":"Максимальное сжатие","typ":int,"cla":"table-success"},
 "lstep":{"name":"Шаг измерения усилия пружины","typ":int,"cla":"table-success"},
-"docycles":{"name":"Выполнено циклов сжатия","typ":int,"cla":"table-primary"},
+"cycles_complete":{"name":"Выполнено циклов сжатия","typ":int,"cla":"table-primary"},
 "clength":{"name":"Расчетная длина пружины","typ":float,"cla":"table-primary"},
 "ckx":{"name":"Коэффициент жесткости","typ":float,"cla":"table-primary"},
 "shrink":{"name":"Усадка","typ":float,"cla":"table-primary"},
@@ -61,6 +61,7 @@ def index():
         config["lmin"] = int(request.form["lmin"])
         config["lmax"] = int(request.form["lmax"])
         config["lstep"] = int(request.form["lstep"])
+        config["ldistance"] = float(request.form["ldistance"])
     config_data={}
     for x in tab:
         config_data[x]=config.get(x,'')
@@ -82,7 +83,7 @@ def sendstatus():
 def execute_newtest():
     config['snum']=config.get('snum',1)+1
     config['xlfilename']=f'sp{config["snum"]:06d}.xlsx'
-
+    config['cycles_complete']=0 #количество циклов зафиксированное в журнале
     tp_status['to_do']="newtest"
     return redirect(url_for('index'))
 
@@ -120,30 +121,9 @@ def execute_reboot():
 def progressbar():
     return  jsonify(tp_status)
 
-#class gp(threading.Thread):
-    #def __init__(self):
-        #threading.Thread.__init__(self)
-        #self.counter=0
-        #self.stp=False
-    #def run(self):
-        #for i in range(100000):
-            #self.counter+=1
-            #tp_status['cycles_done']+=1000
-            #tp_status['progress']+=1
-            #if tp_status['progress']>100:
-                #tp_status['progress']=0
-            #print(tp_status)
-            #print(tmp)
-            #time.sleep(2)
-            #if self.stp:
-                #break
-    #def stop(self):
-        #self.stp=True
+
         
 if __name__ == '__main__':
-    #g=gp()
-    #g.start()
-    
     #обновить ip адрес для сервера nginx
     with open(wanipname, "w") as the_file: 
         the_file.write(f"server_name {' '.join(filter(lambda x:not x is None,[x[1]['inet'] for x in ifcfg.interfaces().items()]))};\n")

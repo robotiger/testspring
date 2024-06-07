@@ -57,7 +57,7 @@
               <tbody>
                 <tr class=""> <th>Номер теста</th>  <th>  {{snum}}  </th>  </tr>
                 <tr class="table-active"> <th>Наименование</th>                            <th>  <input type="text"              id="sname"         name="sname"       class="form-control"    value='{{sname}}'> </th>  </tr>
-                <tr class="table-active"> <th>Длина</th>                                   <th>  <input type="number step=0.01"  id="slength"       name="slength"     class="form-control"    value={{slength}}> </th>  </tr>
+                <tr class="table-active"> <th>Длина свободной пружины</th>                 <th>  <input type="number step=0.01"  id="slength"       name="slength"     class="form-control"    value={{slength}}> </th>  </tr>
                 <tr class="table-active"> <th>Диаметр пружины</th>                         <th>  <input type="number step=0.01"  id="sdiameter"     name="sdiameter"   class="form-control"    value={{sdiameter}}> </th>  </tr>
                 <tr class="table-active"> <th>Толщина прутка</th>                          <th>  <input type="number step=0.001" id="sdp"           name="sdp"         class="form-control"    value={{sdp}}> </th>  </tr>
                 <tr class="table-active"> <th>Число витков</th>                            <th>  <input type="number step=0.01"  id="snrot"         name="snrot"       class="form-control"    value={{snrot}} > </th>  </tr>
@@ -69,6 +69,7 @@
                 <tr class="table-success"> <th>Начальное сжатие</th>                       <th>  <input type="number"            id="lmin"          name="lmin"        class="form-control"    value={{lmin}}> </th>  </tr>
                 <tr class="table-success"> <th>Максимальное сжатие</th>                    <th>  <input type="number"            id="lmax"          name="lmax"        class="form-control"    value={{lmax}}> </th>  </tr>
                 <tr class="table-success"> <th>Шаг измерения усилия пружины</th>           <th>  <input type="number"            id="lstep"         name="lstep"       class="form-control"    value={{lstep}} > </th>  </tr>
+                <tr class="table-success"> <th>Длина поджатой пружины</th>                 <th>  <input type="number step=0.01"  id="ldistance"     name="ldistance"   class="form-control"    value={{ldistance}} > </th>  </tr>
                 <tr class="table-primary"> <th>Выполнено циклов сжатия</th>                <th>  <span class="cycles_done"> {{cycles_done}}</span>  </th>  </tr>
                 <tr class="table-primary"> <th>Расчетная длина пружины</th>                <th>  <span class="clength"      {{clength}}       </span>  </th>  </tr>
                 <tr class="table-primary"> <th>Коэффициент жесткости</th>                  <th>  <span class="ckx"          {{ckx}}        </span>  </th>  </tr>

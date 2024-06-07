@@ -15,6 +15,8 @@ from pymodbus.client import ModbusSerialClient
 import sqlitedict
 import ifcfg
 import requests
+import numpy as np
+import scipy as sc
 
 
 
@@ -35,6 +37,8 @@ totalCycles=200
 mesureCycles=20
 maxspeed=2500
 runspeed=1200
+
+status={"progress":0,"cycles_done":0,"to_do":"nothing","clength":0,"ckx":0,"shrink":0}
 
 
 grb=None
@@ -289,13 +293,14 @@ class measures(threading.Thread):
         distance=(config['lmax']-config['lmin'])
         grb.write(f"g91g1f1000y{Ycontact+config['lmin']}\n".encode())
         #input('pause before mesure')
-        for i in range(distance//config['lstep']+config['lstep']):
+        for i in range(distance//config['lstep']):
+
             grb.write(f"g91g1f1000y{config['lstep']}\n".encode())
             time.sleep(0.1)
             force=mrk.ask()
             forces.append(force)        
             logInf(f" dist {i*config['lstep']}, force {force}")
-        grb.write(f"g91g1f1000y-{distance//config['lstep']*config['lstep']+config['lstep']}\n".encode())
+        grb.write(f"g91g1f1000y-{i*config['lstep']}\n".encode())
         time.sleep(3)
         #on("ena")
         return forces
@@ -363,24 +368,29 @@ class measures(threading.Thread):
             self.home_ym()
         self.cycles=0
         #input('pause')
-        for i in range(mesureCycles+1):
-            cycle=totalCycles//mesureCycles
-            self.runtest(runspeed,cycle)
+        while(True):
+            runspeed= int(config["freq"]*38*60/17)
+
+            if status['to_do']=='stoptest':
+                break                 
+            self.runtest(runspeed,config["cyclesbetween"])
             time.sleep(2)
+            if status['to_do']=='stoptest':
+                break                 
             self.find_edge()
             
-            cycles=self.xlSaveRow(self.runmesure(),cycle)
+            cycles=self.xlSaveRow(self.runmesure())
             logInf(f"do {cycles} cycles")
+            if status['to_do']=='stoptest':
+                break            
             self.home_ym()
-            if not self.atHome:
-                self.home_ym()            
-            if cycles>totalCycles:
+            if status['to_do']=='stoptest':
+                break                 
+        
+            if cycles>config["cycles"]:
                 break
-    
             if stop_event.is_set():
                 break
-            
-        stop_event.set()
         time.sleep(1)
         
         on("ena")
@@ -428,50 +438,71 @@ class measures(threading.Thread):
         ws.cell(row=row,column=5,value='Усадка')
     
         column=6
-        for i in range(config['lmin'],config['lmax']+config['lstep'],config['lstep']): 
+        sx=list(range(config['lmin'],config['lmax']+config['lstep'],config['lstep']))
+        config['sx']=sx
+        for i in sx: 
             #числа только целые пока
+            
             ws.cell(row=row,column=column,value=i)
             column+=1  
         config['startrow']=row+1    
         wb.save(config['xlfilename'])
     
-    def xlSaveRow(self,forces,cycle):
+    def xlSaveRow(self,forces):
+        global status
         wb=xl.load_workbook(config['xlfilename'])
         ws=wb.active
-        mesureCycles=config['cycles']//config['cyclesbetween']+1
-        for mc in range(config['startrow'],config['startrow']+mesureCycles): 
-            if ws.cell(row=mc,column=1).value==None:
-                break
-        if mc==config['startrow']:
-            cycles=0
-        else:
-            cycles=ws.cell(row=mc-1,column=2).value
-        cycles+=cycle
-        dt=datetime.datetime.now()
-        print(f'date is {dt}')
-        ws.cell(row=mc,column=1,value=dt) 
-        ws.cell(row=mc,column=2,value=cycles) 
+        
+        config['cycles_complete']+=config["cyclesbetween"]
+        gpIdx.count=config["cyclesbetween"] #чтобы прогресс не скакал а двигался плавно
+        mc=config['startrow']
+        
+        #немного расчетов
+        sx=np.array(config['sx'])
+        sf=np.array(forces)
+        
+        def f(x,sx,sn):
+            return ((sx*x[0]+x[1]-sn)**2).sum()
+        res=minimize(f,x0=x,args=(sx,sn))
+        ckx=res.x[0]
+        clength=res.x[1]/res.x[0]+config["ldistance"]
+        # сохраняем результаты расчета в статус для обновления веб страницы
+        status['ckx']=ckx
+        status['clength']=clength
+        status['shrink']=config['slength']-clength
+
+        #заполняем строку данными
+        ws.cell(row=mc,column=1,value=datetime.datetime.now()) 
+        ws.cell(row=mc,column=2,value=config['cycles_complete']) 
+        ws.cell(row=mc,column=3,value=clength) 
+        ws.cell(row=mc,column=4,value=ckx) 
+        ws.cell(row=mc,column=4,value=config['slength']-clength) 
+        
+        
         for i in range(len(forces)):
             ws.cell(row=mc,column=i+6,value=forces[i]) 
+            
+        config['startrow']+=1
         wb.save(config['xlfilename'])
         return cycles     
 
 
-class gp(threading.Thread):
+class webrun(threading.Thread):
     def __init__(self,stop_event,pin):
         threading.Thread.__init__(self)
         self.stop_event=stop_event
 
     def run():
+        global status
         nothing='nothing'
         while(not self.stop_event.is_set()):
             res=requests.get('http://localhost:5000/status')
             if res.ok:
-                status=res.json()
-            print(status)
+                newstatus=res.json()
+            status['to_do']=newstatus['to_do']
                 
             if gpIdx.count>=0:
-                status['cycles_done']=config["cycles"]-gpIdx.count
+                status['cycles_done']=config["cycles_complete"]+config["cyclesbetween"]-gpIdx.count
             else:
                 status['cycles_done']=0
                 
@@ -480,7 +511,8 @@ class gp(threading.Thread):
             else:
                 status['progress']=0
             
-            rr=requests.post('http://localhost:5000/status',json=status)             
+            rr=requests.post('http://localhost:5000/status',json=status) 
+            time.sleep(1)
     
 
 
@@ -520,17 +552,19 @@ if __name__ == '__main__':
     
     ms=measures(stop_event)
     #ms.run()
+    web=webrun()
+    web.start()
 
     while(True):
 
-        if to_do=='setspring':
+        if status['to_do']=='setspring':
             ms.find_edge()
             ms.home_ym()
-            status['to_do']=nothing
+            status['to_do']='nothing'
             
-        if to_do=='runtest':
+        if status['to_do']=='runtest':
             ms.run_test()
-            status['to_do']=nothing            
+            status['to_do']='nothing'            
    
 
         time.sleep(1)
