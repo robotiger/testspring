@@ -278,13 +278,16 @@ class measures(threading.Thread):
         time.sleep(2)
     
     def runtest(self,speed,count):
-    
+        global status
         gpIdx.stop=0
         gpIdx.count=count
         runmb(speed)
         while(gpIdx.count>0):
             #print(gpIdx.stop,gpIdx.count,gpIdx.last)
+            if status['to_do']=='stoptest':
+                break               
             time.sleep(0.5)        
+        runmb(0)
 
     def runmesure(self):
         forces=[]
@@ -373,22 +376,23 @@ class measures(threading.Thread):
             runspeed= int(config["freq"]*38*60/17)
 
             if status['to_do']=='stoptest':
-                break                 
-            self.runtest(runspeed,config["cyclesbetween"])
+                break             
+            runcycles=min(config["cyclesbetween"],config["cycles"]-config['cycles_complete'])
+            self.runtest(runspeed,runcycles)
             time.sleep(2)
             if status['to_do']=='stoptest':
                 break                 
             self.find_edge()
             
-            cycles=self.xlSaveRow(self.runmesure())
-            logInf(f"do {cycles} cycles")
+            self.xlSaveRow(self.runmesure())
+            
             if status['to_do']=='stoptest':
                 break            
             self.home_ym()
             if status['to_do']=='stoptest':
                 break                 
         
-            if cycles>config["cycles"]:
+            if config['cycles_complete']>config["cycles"]:
                 break
             if stop_event.is_set():
                 break
@@ -486,7 +490,7 @@ class measures(threading.Thread):
             
         config['startrow']+=1
         wb.save(config['xlfilename'])
-        return cycles     
+        
 
 
 class webrun(threading.Thread):
