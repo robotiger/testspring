@@ -305,11 +305,12 @@ class measures(threading.Thread):
             force=mrk.ask()
             self.forces.append(force) 
 
-            logInf(f" dist {config['lmax']}, force {force}")
+            logInf(f" dist {i}, force {force}")
 
         grb.write(f"g91g1f1000y-{config['lmax']}\n".encode())
         time.sleep(5)
         #on("ena")
+        return self.forces
 
     
     
