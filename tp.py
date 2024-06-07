@@ -494,24 +494,30 @@ class webrun(threading.Thread):
 
     def run(self):
         global status
-        nothing='nothing'
+        res_ok=False
         while(not self.stop_event.is_set()):
-            res=requests.get('http://localhost:5000/status')
-            if res.ok:
-                newstatus=res.json()
-            status['to_do']=newstatus['to_do']
-                
-            if gpIdx.count>=0:
-                status['cycles_done']=config["cycles_complete"]+config["cyclesbetween"]-gpIdx.count
-            else:
-                status['cycles_done']=0
-                
-            if status['cycles_done']>0:
-                status['progress']=status['cycles_done']*100//config["cycles"]
-            else:
-                status['progress']=0
-            
-            rr=requests.post('http://localhost:5000/status',json=status) 
+            try:
+                res=requests.get('http://localhost:5000/status')
+                if res.ok:
+                    newstatus=res.json()
+                    res_ok=res.ok
+                status['to_do']=newstatus['to_do']
+            except:
+                print("отключено приложение веб")
+            if res_ok:
+                if gpIdx.count>=0:
+                    status['cycles_done']=config["cycles_complete"]+config["cyclesbetween"]-gpIdx.count
+                else:
+                    status['cycles_done']=0
+                    
+                if status['cycles_done']>0:
+                    status['progress']=status['cycles_done']*100//config["cycles"]
+                else:
+                    status['progress']=0
+                try:
+                    rr=requests.post('http://localhost:5000/status',json=status) 
+                except:
+                    print("отключено приложение веб")            
             time.sleep(1)
     
 
