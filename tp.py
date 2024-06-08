@@ -12,7 +12,7 @@ import numpy as np
 import openpyxl as xl
 import OPi.GPIO as g
 from pymodbus.client import ModbusSerialClient
-import sqlitedict
+#import sqlitedict
 import ifcfg
 import requests
 import numpy as np
@@ -20,7 +20,7 @@ from scipy.optimize import minimize
 
 
 
-config=sqlitedict.SqliteDict('config_tf.db')
+#config=sqlitedict.SqliteDict('config_tf.db')
 #config.autocommit=True
 
 logname='/home/bfg/data/ts.log'
@@ -39,7 +39,7 @@ maxspeed=2500
 runspeed=1200
 
 status={"progress":0,"cycles_done":0,"to_do":"nothing","clength":0,"ckx":0,"shrink":0}
-
+config=status
 
 grb=None
 gpp=None
@@ -419,6 +419,7 @@ class measures(threading.Thread):
          'lmin': 'Начальное сжатие',
          'lmax': 'Максимальное сжатие',
          'lstep': 'Шаг измерения усилия пружины',
+         'ldistance':'Длина поджатой пружины'
          }
         
         for t in tab:
