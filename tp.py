@@ -57,7 +57,7 @@ mesureCycles=20
 maxspeed=2500
 runspeed=1200
 
-status={"progress":0,"cycles_done":0,"to_do":"nothing","clength":0,"ckx":0,"shrink":0}
+status={"progress":0,"cycles_done":0,"to_do":"nothing","clength":0,"ckx":0,"shrink":0,"status":""}
 config={}
 
 grb=None
@@ -591,7 +591,8 @@ if __name__ == '__main__':
                     status['to_do']='notathome'
                     
         if status['to_do']=='runtest':
-            if config['cycles_complete']<config["cycles"]:
+            print(f"{config['cycles_complete']}<{config['cycles']}")
+            if config['cycles_complete']<config['cycles']:
                 ms.run_test()
             status['to_do']='nothing'            
 
