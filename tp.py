@@ -288,6 +288,7 @@ class measures(threading.Thread):
         
     def find_edge(self):
         logInf("start find edge")
+        on("son")
         for t in range(5):
             
             gpIdx.count=1
