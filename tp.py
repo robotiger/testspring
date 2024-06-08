@@ -565,7 +565,7 @@ if __name__ == '__main__':
 
     while(True):
 
-        print(f"main {status['to_do']}")
+        print(f"main {status['to_do']} \n status {status}\n config {config}")
         
         if status['to_do']=='setspring':
             ms.find_edge()
