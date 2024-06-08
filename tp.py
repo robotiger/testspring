@@ -528,9 +528,6 @@ if __name__ == '__main__':
 
     stop_event = threading.Event()
     
-    web=webrun(stop_event)
-    web.start()
-   
     
     grb=grbs(stop_event)
     grb.start()
@@ -547,6 +544,10 @@ if __name__ == '__main__':
     gpIdx.callback_stop=grb.soft_reset
     gpYm.callback_stop=grb.soft_reset
     gpYp.callback_stop=grb.soft_reset
+
+    web=webrun(stop_event)
+    web.start()
+
     
     time.sleep(10)
     
