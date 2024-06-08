@@ -6,6 +6,7 @@ import time
 import sqlitedict
 import openpyxl as xl
 import ifcfg
+import os
 
 
 app = Flask(__name__)
@@ -106,7 +107,10 @@ def execute_stoptest():
 
 @app.route('/download',methods =['GET'])
 def execute_download():
-    return send_file(config['xlfilename'], as_attachment=True)
+    if os.path.exists(config['xlfilename']):
+        return send_file(config['xlfilename'], as_attachment=True)
+    else:
+        return redirect(url_for('index'))
 
 @app.route('/update_software',methods =['GET'])
 def execute_update():
