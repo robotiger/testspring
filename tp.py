@@ -12,7 +12,7 @@ import numpy as np
 import openpyxl as xl
 import OPi.GPIO as g
 from pymodbus.client import ModbusSerialClient
-#import sqlitedict
+import sqlitedict
 import ifcfg
 import requests
 import numpy as np
@@ -20,11 +20,28 @@ from scipy.optimize import minimize
 
 
 
-#config=sqlitedict.SqliteDict('config_tf.db')
-#config.autocommit=True
+config=sqlitedict.SqliteDict('config_tp.db')
+config.autocommit=True
 
 logname='/home/bfg/data/ts.log'
 
+tab={
+ 'snum': 'Номер теста',
+ 'sname': 'Наименование',
+ 'slength': 'Длина',
+ 'sdiameter': 'Диаметр пружины',
+ 'sdp': 'Толщина прутка',
+ 'snrot': 'Число витков',
+ 'smatherial': 'Материал',
+ 'skxnom': 'Номинальный коэфф жесткости',
+ 'cycles': 'Число циклов сжатия',
+ 'cyclesbetween': 'Число циклов сжатия между измерениями',
+ 'freq': 'Частота сжатия',
+ 'lmin': 'Начальное сжатие',
+ 'lmax': 'Максимальное сжатие',
+ 'lstep': 'Шаг измерения усилия пружины',
+ 'ldistance':'Длина поджатой пружины'
+ }
     
 #Yfirststep=5
 #Ystep=1
@@ -404,23 +421,7 @@ class measures(threading.Thread):
         ws.cell(row=1,column=1,value=datetime.datetime.now())
         
         row=2
-        tab={
-         'snum': 'Номер теста',
-         'sname': 'Наименование',
-         'slength': 'Длина',
-         'sdiameter': 'Диаметр пружины',
-         'sdp': 'Толщина прутка',
-         'snrot': 'Число витков',
-         'smatherial': 'Материал',
-         'skxnom': 'Номинальный коэфф жесткости',
-         'cycles': 'Число циклов сжатия',
-         'cyclesbetween': 'Число циклов сжатия между измерениями',
-         'freq': 'Частота сжатия',
-         'lmin': 'Начальное сжатие',
-         'lmax': 'Максимальное сжатие',
-         'lstep': 'Шаг измерения усилия пружины',
-         'ldistance':'Длина поджатой пружины'
-         }
+
         
         for t in tab:
             ws.cell(row=row,column=1,value=tab[t])
@@ -499,7 +500,8 @@ class webrun(threading.Thread):
                     newstatus=res.json()
                     res_ok=res.ok
                 status['to_do']=newstatus['to_do']
-                config=newstatus
+                for x in tab:
+                    config[x]=newstatus[x]
                 print(f"got status to_do {newstatus['to_do']}")
             except:
                 print("отключено приложение веб")
