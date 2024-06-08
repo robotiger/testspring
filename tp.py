@@ -288,14 +288,19 @@ class measures(threading.Thread):
         
     def find_edge(self):
         logInf("start find edge")
-        gpIdx.count=1
-        gpIdx.stop=0
-        grb.write(b"g91g1f1000x1000\n")
-        while(gpIdx.count>0):
-            #print(gpIdx.stop,gpIdx.count,gpIdx.last)
-            time.sleep(0.5)
-        logInf("edge found rotation stop at idx")
-        time.sleep(2)
+        for t in range(5):
+            
+            gpIdx.count=1
+            gpIdx.stop=0
+            grb.write(b"g91g1f1000x1000\n")
+            time.sleep(5)
+            if gpIdx.count==0:
+                break
+                #print(gpIdx.stop,gpIdx.count,gpIdx.last)
+        # если не вал не повернулся вернём ошибку        
+        return gpIdx.count==1
+        #logInf("edge found rotation stop at idx")
+        #time.sleep(2)
     
     def runtest(self,speed,count):
         global status
@@ -367,6 +372,7 @@ class measures(threading.Thread):
             else:
                 logInf("датчик ym не нашли")
                 #stop_event.set()
+        return self.atHome
                                 
     def run_test(self):
         off("ena")
@@ -504,10 +510,11 @@ class webrun(threading.Thread):
                 status['to_do']=newstatus['to_do']
                 for x in tab:
                     config[x]=newstatus[x]
-                print(f"got status to_do {newstatus['to_do']}")
+                print(f"got status to_do {newstatus['to_do']} \n{config}")
             except:
                 print("отключено приложение веб")
             if res_ok:
+                
                 if gpIdx.count>=0:
                     status['cycles_done']=config["cycles_complete"]+config["cyclesbetween"]-gpIdx.count
                 else:
@@ -574,10 +581,14 @@ if __name__ == '__main__':
         print(f"main {status['to_do']} \n status {status}\n config {config}")
         
         if status['to_do']=='setspring':
-            ms.find_edge()
-            ms.home_ym()
-            status['to_do']='nothing'
-            
+            if ms.find_edge():
+                status['to_do']='nofindedge'
+            else:
+                if ms.home_ym():
+                    status['to_do']='athome'
+                else:
+                    status['to_do']='notathome'
+                    
         if status['to_do']=='runtest':
             if config['cycles_complete']<config["cycles"]:
                 ms.run_test()
