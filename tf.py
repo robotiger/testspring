@@ -86,7 +86,7 @@ def execute_newtest():
     config['snum']=config.get('snum',1)+1
     config['xlfilename']=f'sp{config["snum"]:06d}.xlsx'
     config['cycles_complete']=0 #количество циклов зафиксированное в журнале
-    tp_status['to_do']="newtest"
+    tp_status['to_do']="newtest"    
     return redirect(url_for('index'))
 
 @app.route('/setspring', methods=['GET'])
