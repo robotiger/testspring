@@ -21,26 +21,25 @@ wanipname ="/home/bfg/data/wanip.conf"
 for x in config:
     print(x, config[x])
 
-tab={ "snum":{"name":"Номер теста","typ":int,"cla":""},
-"sname":{"name":"Наименование","typ":str,"cla":"table-active"},
-"slength":{"name":"Длина","typ":float,"cla":"table-active"},
-"sdiameter":{"name":"Диаметр пружины","typ":float,"cla":"table-active"},
-"sdp":{"name":"Толщина прутка","typ":float,"cla":"table-active"},
-"snrot":{"name":"Число витков","typ":float,"cla":"table-active"},
-"smatherial":{"name":"Материал","typ":str,"cla":"table-active"},
-"skxnom":{"name":"Номинальный коэфф жесткости","typ":float,"cla":"table-success"},
-"cycles":{"name":"Число циклов сжатия","typ":int,"cla":"table-success"},
-"cyclesbetween":{"name":"Число циклов сжатия между измерениями","typ":int,"cla":"table-success"},
-"freq":{"name":"Частота сжатия","typ":float,"cla":"table-success"},
-"lmin":{"name":"Начальное сжатие","typ":int,"cla":"table-success"},
-"lmax":{"name":"Максимальное сжатие","typ":int,"cla":"table-success"},
-"lstep":{"name":"Шаг измерения усилия пружины","typ":int,"cla":"table-success"},
-"cycles_complete":{"name":"Выполнено циклов сжатия","typ":int,"cla":"table-primary"},
-"clength":{"name":"Расчетная длина пружины","typ":float,"cla":"table-primary"},
-"ckx":{"name":"Коэффициент жесткости","typ":float,"cla":"table-primary"},
-"shrink":{"name":"Усадка","typ":float,"cla":"table-primary"},
-"ldistance":{"name":"Длина поджатой пружины","typ":int,"cla":"table-success"},
-    }
+tab={
+ 'snum': 'Номер теста',
+ 'sname': 'Наименование',
+ 'slength': 'Длина',
+ 'sdiameter': 'Диаметр пружины',
+ 'sdp': 'Толщина прутка',
+ 'snrot': 'Число витков',
+ 'smatherial': 'Материал',
+ 'skxnom': 'Номинальный коэфф жесткости',
+ 'cycles': 'Число циклов сжатия',
+ 'cyclesbetween': 'Число циклов сжатия между измерениями',
+ 'freq': 'Частота сжатия',
+ 'lmin': 'Начальное сжатие',
+ 'lmax': 'Максимальное сжатие',
+ 'lstep': 'Шаг измерения усилия пружины',
+ 'ldistance':'Длина поджатой пружины',
+ 'xlfilename':'Имя файла протокола',
+ 'cycles_complete':'Выполнено циклов'
+ }
 
 
 tp_status={"progress":0,"cycles_done":0,"to_do":"nothing","clength":0,"ckx":0,"shrink":0}
