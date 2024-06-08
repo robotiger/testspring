@@ -39,7 +39,7 @@ maxspeed=2500
 runspeed=1200
 
 status={"progress":0,"cycles_done":0,"to_do":"nothing","clength":0,"ckx":0,"shrink":0}
-config=status
+config={}
 
 grb=None
 gpp=None
@@ -498,7 +498,8 @@ class webrun(threading.Thread):
                     newstatus=res.json()
                     res_ok=res.ok
                 status['to_do']=newstatus['to_do']
-                #print(f"got status to_do {newstatus['to_do']}")
+                config=newstatus
+                print(f"got status to_do {newstatus['to_do']}")
             except:
                 print("отключено приложение веб")
             if res_ok:

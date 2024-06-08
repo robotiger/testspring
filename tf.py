@@ -66,8 +66,7 @@ def index():
     config_data={}
     for x in tab:
         config_data[x]=config.get(x,'')
-    for x in config:
-        config_data[x]=config.get(x,'')
+
 
     return render_template('index.html',**(config_data|tp_status))
 
@@ -78,8 +77,9 @@ def sendstatus():
         for item in tp_status:
             tp_status[item]=request.json.get(item)
     data={}
-    for x in tab:
-        data[x]=config.get(x,'')   
+
+    for x in config:
+        data[x]=config.get(x,'')        
     return jsonify(data|tp_status)
 
 @app.route('/newtest', methods=['GET'])
