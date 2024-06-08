@@ -490,6 +490,7 @@ class webrun(threading.Thread):
 
     def run(self):
         global status
+        global config
         res_ok=False
         while(not self.stop_event.is_set()):
             try:
