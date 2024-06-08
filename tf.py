@@ -64,7 +64,9 @@ def index():
         config["lstep"] = int(request.form["lstep"])
         config["ldistance"] = float(request.form["ldistance"])
     config_data={}
-    for x in config|tab:
+    for x in tab:
+        config_data[x]=config.get(x,'')
+    for x in config:
         config_data[x]=config.get(x,'')
 
     return render_template('index.html',**(config_data|tp_status))
