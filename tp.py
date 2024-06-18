@@ -257,7 +257,7 @@ class mark(threading.Thread):
         
         while(not self.stop_event.is_set()):
             self.buf=self.ser.readline().decode()
-            #print(self.buf)
+            print("mark read",self.buf)
 
     def write(self,data):
         self.ser.write(data)
