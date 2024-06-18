@@ -1,12 +1,9 @@
-from flask import Flask, render_template, request, redirect, url_for,  send_file, Response
-from flask_bootstrap import Bootstrap
-import serial 
-import math
 import os
 import sys
 import threading
 import time
 import datetime
+import serial 
 import logging
 import numpy as np
 import openpyxl as xl
@@ -15,7 +12,6 @@ from pymodbus.client import ModbusSerialClient
 import sqlitedict
 import ifcfg
 import requests
-import numpy as np
 from scipy.optimize import minimize
 
 
@@ -52,10 +48,10 @@ tab={
 Ycontact=27.5
 Fkr=200 
 
-totalCycles=200
-mesureCycles=20
-maxspeed=2500
-runspeed=1200
+#totalCycles=200
+#mesureCycles=20
+#maxspeed=2500
+#runspeed=1200
 
 status={"progress":0,"cycles_done":0,"to_do":"nothing","clength":0,"ckx":0,"shrink":0,"status":""}
 config={}
