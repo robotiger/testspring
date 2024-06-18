@@ -543,7 +543,7 @@ def scanUSB():
     devs={}
     for portn in range(3):
         portname=f'/dev/ttyUSB{portn}'
-        print(f'try open {self.port}')
+        print(f'try open {portname}')
         try:
             with serial.Serial(portname, 115200, timeout=1) as ser:    
                 
