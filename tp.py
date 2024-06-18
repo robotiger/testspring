@@ -216,7 +216,7 @@ class grbs(threading.Thread):
 
 class mark(threading.Thread):
 
-    def __init__(self,stop_event):
+    def __init__(self,stop_event,port):
         logInf("mark __init__")
         threading.Thread.__init__(self)  
         self.stop_event=stop_event
@@ -539,6 +539,32 @@ class webrun(threading.Thread):
             time.sleep(1)
     
 
+def scanUSB():
+    devs={}
+    for portn in range(3):
+        portname=f'/dev/ttyUSB{portn}'
+        print(f'try open {self.port}')
+        try:
+            with serial.Serial(portname, 115200, timeout=1) as ser:    
+                
+                time.sleep(1)
+                ser.readline()
+                s=ser.readline().decode()
+                print(s)
+                if len(s)>0:
+                    if s[:4]=="Grbl":
+                        devs["grbl"]=portname
+                ser.write(b'?\r')
+                time.sleep(1)
+                s=ser.readline().decode()
+                if s[:1]=='0':
+                    devs["mark"]=portname
+        except:
+            pass
+    return devs
+                
+                
+                
 
 
 # ****************main ********************
@@ -547,6 +573,8 @@ if __name__ == '__main__':
 
     stop_event = threading.Event()
     
+    print(scanUSB())
+    exit()
     
     grb=grbs(stop_event)
     grb.start()
