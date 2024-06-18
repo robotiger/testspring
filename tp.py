@@ -247,9 +247,12 @@ class mark(threading.Thread):
                             break
                     if self.ok:
                         self.reader()
+                print("Mark closed!!!")
     
             except:
+                print("Mark can't open")
                 pass
+        
 
 
     def reader(self):
