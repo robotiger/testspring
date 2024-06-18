@@ -170,36 +170,22 @@ class gp(threading.Thread):
 
 
 class grbs(threading.Thread):
-    def __init__(self,stop_event):
+    def __init__(self,stop_event,devs):
         logInf("grbs __init__ ")
         threading.Thread.__init__(self)  
         self.stop_event=stop_event
-        
+        self.port=devs['grbl']
         self.pack=b''
         self.length=1
     def run(self): 
         logInf("run grbs")
-        for portn in range(3):
-            self.port=f'/dev/ttyUSB{portn}'
-            try:
-                with serial.Serial(self.port, 115200, timeout=1) as self.ser:
-                    for i in range(5):
-                        time.sleep(1)
-                        fs=self.ser.readline()
-                        #print(fs.decode())
-                        if len(fs)==2:
-                            continue
-                        if fs.decode()[:4].lower()=="grbl":
-                            self.reader()
-            except:
-                pass
-    def reader(self):
-        logInf(f"grb reader run for {self.port}")
-        buf=b''
-        while(not self.stop_event.is_set()):
-            buf=self.ser.readline().decode()
-            if len(buf)>0:
-                logInf(f'grbs rcv {buf}')
+        with serial.Serial(self.port, 115200, timeout=1) as self.ser:
+            buf=b''
+            while(not self.stop_event.is_set()):
+                buf=self.ser.readline().decode()
+                if len(buf)>0:
+                    logInf(f'grbs rcv {buf}')
+                    
     def write(self,data):
         if type(data)==type('str'):
             data=data.encode()
@@ -222,45 +208,19 @@ class mark(threading.Thread):
         self.stop_event=stop_event
         self.ok=False        
         self.buf=''
+        self.port=port['mark']
+
     def run(self): 
         logInf("run mark")
         
         val=None
-        for portn in range(3):
-            self.port=f'/dev/ttyUSB{portn}'
-            logInf(f'mark try open {self.port}')
-            try:
-                with serial.Serial(self.port, 115200, timeout=1) as self.ser:
-                    for i in range(5):
-                        self.ser.write(b'?\r')
-                        time.sleep(1)
-                        fs=self.ser.readline()
-                        #print(fs.decode())
-                        if len(fs)<=2:
-                            continue
-                        try: 
-                            val=float(fs.decode())
-                        except:
-                            pass
-                        if type(val)==type(0.0):
-                            self.ok=True
-                            break
-                    if self.ok:
-                        self.reader()
-                print("Mark closed!!!")
-    
-            except:
-                print("Mark can't open")
-                pass
+        with serial.Serial(self.port, 115200, timeout=1) as self.ser:
+            while(not self.stop_event.is_set()):
+                self.buf=self.ser.readline().decode()
+                print("mark read",self.buf)            
+            
+        print("Mark closed!!!")
         
-
-
-    def reader(self):
-        logInf(f"mark reader run for {self.port}")
-        
-        while(not self.stop_event.is_set()):
-            self.buf=self.ser.readline().decode()
-            print("mark read",self.buf)
 
     def write(self,data):
         self.ser.write(data)
@@ -573,10 +533,13 @@ if __name__ == '__main__':
 
     stop_event = threading.Event()
     
-    print(scanUSB())
-    exit()
+    devs=scanUSB()
     
-    grb=grbs(stop_event)
+    if len(devs)<2:
+        print(f'devs {devs} не достаточно')
+        exit()
+    
+    grb=grbs(stop_event,devs)
     grb.start()
     
     gpIdx=gp(stop_event,"idx")
@@ -598,7 +561,7 @@ if __name__ == '__main__':
     
     time.sleep(10)
     
-    mrk=mark(stop_event)
+    mrk=mark(stop_event,devs)
     mrk.start()
     time.sleep(10)
     #print(f'mark run is {mrk.ok}')
