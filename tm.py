@@ -79,22 +79,7 @@ class mark(threading.Thread):
             firstMeasure=measure
         return measure
     
-class webrun(threading.Thread):
-    def __init__(self,stop_event):
-        threading.Thread.__init__(self)
-        self.stop_event=stop_event
 
-    def run(self):
-
-        while(not self.stop_event.is_set()):
-
-                try:
-
-
-                    
-                except:
-                    lprint("отключено приложение веб")            
-            time.sleep(0.1)
 
 
 # ****************main ********************
