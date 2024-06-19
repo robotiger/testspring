@@ -99,4 +99,6 @@ if __name__ == '__main__':
     mrk.start()
     
     while(True):
-        rr=requests.post('http://localhost:5000/forcemeasure',json={'force':mrk.ask,'forcetime':time.time()}) 
+        force={'force':mrk.ask,'forcetime':time.time()}
+        lprint(repr(force))
+        rr=requests.post('http://localhost:5000/forcemeasure',json=force) 
