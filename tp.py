@@ -314,9 +314,9 @@ class measures(threading.Thread):
             if gpYm.read_value(): #уже за датчиком, нужно сойти с датчика
                 grb.write("g91g21g1f1000y1\n") #сходим на 1 мм
                 time.sleep(1)
-                if mrk.ask()>Fkr:
-                    grb.write("g91g21g1f1000y-1\n")
-                    
+                #if mrk.ask()>Fkr:
+                #    grb.write("g91g21g1f1000y-1\n")
+                # надо вернуть   
             else:
                 break #как только сошли прекращаем движение
                 
