@@ -58,7 +58,7 @@ class mark(threading.Thread):
                 lprint(f'mark port is {self.markserial._port}')
                 tmp=self.markserial.readline()
                 if len(tmp)>0:
-                    self.buf=tmp.decode()
+                    self.buf=tmp.decode().strip()
                     lprint(f'mark read {self.buf}')   
         lprint("Mark closed!!!")
         
@@ -89,7 +89,7 @@ if __name__ == '__main__':
     
     devs=scanUSB()
     
-    if len(devs)<2:
+    if not 'mark' in devs:
         lprint(f'devs {devs} не достаточно')
         exit()
     lprint(repr(devs))

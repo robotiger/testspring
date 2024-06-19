@@ -278,6 +278,7 @@ class measures(threading.Thread):
         runmb(0)
 
     def runmesure(self):
+        
         self.forces=[]
         lprint("move y to first mesuring distance")
         off("ena")
@@ -539,7 +540,7 @@ if __name__ == '__main__':
     
     devs=scanUSB()
     
-    if len(devs)<2:
+    if not 'grbl' in devs:
         lprint(f'devs {devs} не достаточно')
         exit()
     lprint(repr(devs))
