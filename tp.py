@@ -175,18 +175,20 @@ class grbs(threading.Thread):
         self.length=1
     def run(self): 
         logInf("run grbs")
-        with serial.Serial(self.port, 115200, timeout=1) as self.ser:
+        with serial.Serial(self.port, 115200, timeout=1) as self.grblserial:
             buf=b''
             while(not self.stop_event.is_set()):
-                buf=self.ser.readline().decode()
-                if len(buf)>0:
+                tmp=self.grblserial.readline()
+                if len(tmp)>0:
+                    self.buf=tmp.decode()
                     logInf(f'grbs rcv {buf}')
                     
     def write(self,data):
         if type(data)==type('str'):
             data=data.encode()
-        x=self.ser.write(data)
+        x=self.grblserial.write(data)
         logInf(f"sent to grbl {x} byte: {data}")
+        
     def soft_reset(self):
         self.write(b'!')
         setmb(76,100)
@@ -210,24 +212,24 @@ class mark(threading.Thread):
         logInf("run mark")
         
         val=None
-        with serial.Serial(self.port, 115200, timeout=1) as self.ser:
+        with serial.Serial(self.port, 115200, timeout=1) as self.markserial:
             while(not self.stop_event.is_set()):
-                self.buf=self.ser.readline().decode()
-                print("mark read",self.buf)            
-            
+                tmp=self.markserial.readline()
+                if len(tmp)>0:
+                    self.buf=tmp.decode()
+                #print("mark read",self.buf)            
         print("Mark closed!!!")
-        
-
-    def write(self,data):
-        self.ser.write(data)
+    
     
     def ask(self):
         firstMeasure=0
+        measure=-1
         for i in range(6):
             time.sleep(0.5)
-            self.ser.write(b'?\r')
+            self.markserial.write(b'?\r')
             time.sleep(0.5)
-            measure=float(self.buf)
+            if len(self.buf)>0:
+                measure=float(self.buf)
             if measure > Fkr:
                 grb.soft_reset()
                 
