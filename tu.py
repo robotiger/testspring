@@ -231,6 +231,10 @@ if __name__ == '__main__':
     gpYm=gp(stop_event,"ym")
     gpYm.start()
     
+    grb=grbs(stop_event,devs)
+    grb.start()    
+    
+    
     gpIdx.callback_stop=grb.soft_reset
     gpYm.callback_stop=grb.soft_reset
     gpYp.callback_stop=grb.soft_reset    
@@ -239,9 +243,7 @@ if __name__ == '__main__':
     cmb.connect()
     cmb.write_register(0x1010,0x0,1)    
     
-    grb=grbs(stop_event,devs)
-    grb.start()    
-    
+
     mrk=mark(stop_event,devs)
     mrk.start()
     
