@@ -578,9 +578,11 @@ if __name__ == '__main__':
         print(f"main {status['to_do']} \n status {status}\n config {config}")
         
         if status['to_do']=='setspring':
+            print(" find edge")
             if ms.find_edge():
                 status['to_do']='nofindedge'
             else:
+                print("go home ")
                 if ms.home_ym():
                     status['to_do']='athome'
                 else:
