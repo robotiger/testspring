@@ -163,42 +163,6 @@ class gp(threading.Thread):
     def read_value(self):
         return g.input(self.pin)
         
-
-
-class grbs(threading.Thread):
-    def __init__(self,stop_event,devs):
-        logInf("grbs __init__ ")
-        threading.Thread.__init__(self)  
-        self.stop_event=stop_event
-        self.port=devs['grbl']
-        self.pack=b''
-        self.length=1
-    def run(self): 
-        logInf("run grbs")
-        with serial.Serial(self.port, 115200, timeout=1) as self.grblserial:
-            buf=b''
-            while(not self.stop_event.is_set()):
-                print('grbl port is',self.grblserial._port)
-                tmp=self.grblserial.readline()
-                if len(tmp)>0:
-                    self.buf=tmp.decode()
-                    logInf(f'grbs rcv {buf}')
-                    
-    def write(self,data):
-        if type(data)==type('str'):
-            data=data.encode()
-        x=self.grblserial.write(data)
-        logInf(f"sent to grbl {x} byte: {data}")
-        
-    def soft_reset(self):
-        self.write(b'!')
-        setmb(76,100)
-        time.sleep(1)
-        self.write(b'\x18')
-        setmb(0x1010,0)
-        logInf("soft reset done")
-
-
 class mark(threading.Thread):
 
     def __init__(self,stop_event,port):
@@ -238,6 +202,42 @@ class mark(threading.Thread):
                 break
             firstMeasure=measure
         return measure
+
+class grbs(threading.Thread):
+    def __init__(self,stop_event,devs):
+        logInf("grbs __init__ ")
+        threading.Thread.__init__(self)  
+        self.stop_event=stop_event
+        self.port=devs['grbl']
+        self.pack=b''
+        self.length=1
+    def run(self): 
+        logInf("run grbs")
+        with serial.Serial(self.port, 115200, timeout=1) as self.grblserial:
+            buf=b''
+            while(not self.stop_event.is_set()):
+                print('grbl port is',self.grblserial._port)
+                tmp=self.grblserial.readline()
+                if len(tmp)>0:
+                    self.buf=tmp.decode()
+                    logInf(f'grbs rcv {buf}')
+                    
+    def write(self,data):
+        if type(data)==type('str'):
+            data=data.encode()
+        x=self.grblserial.write(data)
+        logInf(f"sent to grbl {x} byte: {data}")
+        
+    def soft_reset(self):
+        self.write(b'!')
+        setmb(76,100)
+        time.sleep(1)
+        self.write(b'\x18')
+        setmb(0x1010,0)
+        logInf("soft reset done")
+
+
+
 
 
 class measures(threading.Thread):
