@@ -286,12 +286,12 @@ class measures(): #threading.Thread):
         grb.write(f"g91g1f1000y{Ycontact+config['lmin']-config['lstep']}\n")
         #input('pause before mesure')
         time.sleep(0.1)
-        #force=mrk.ask()
+        force=mrk.ask()
         for i in self.sx:
             grb.write(f"g91g1f1000y{config['lstep']}\n".encode())
             time.sleep(0.1)
-            #force=mrk.ask()
-            force=0.0
+            force=mrk.ask()
+            #force=0.0
             self.forces.append(force) 
 
             lprint(f" dist {i}, force {force}")
@@ -505,29 +505,29 @@ class webrun(threading.Thread):
             time.sleep(1)
     
 
-#def scanUSB():
-    #devs={}
-    #for portn in range(3):
-        #portname=f'/dev/ttyUSB{portn}'
-        #lprint(f'try open {portname}')
-        #try:
-            #with serial.Serial(portname, 115200, timeout=1) as ser:    
+def scanUSB():
+    devs={}
+    for portn in range(3):
+        portname=f'/dev/ttyUSB{portn}'
+        lprint(f'try open {portname}')
+        try:
+            with serial.Serial(portname, 115200, timeout=1) as ser:    
                 
-                #time.sleep(1)
-                #ser.readline()
-                #s=ser.readline().decode()
-                #lprint(s)
-                #if len(s)>0:
-                    #if s[:4]=="Grbl":
-                        #devs["grbl"]=portname
-                #ser.write(b'?\r')
-                #time.sleep(1)
-                #s=ser.readline().decode()
-                #if s[:1]=='0':
-                    #devs["mark"]=portname
-        #except:
-            #pass
-    #return devs
+                time.sleep(1)
+                ser.readline()
+                s=ser.readline().decode()
+                lprint(s)
+                if len(s)>0:
+                    if s[:4]=="Grbl":
+                        devs["grbl"]=portname
+                ser.write(b'?\r')
+                time.sleep(1)
+                s=ser.readline().decode()
+                if s[:1]=='0':
+                    devs["mark"]=portname
+        except:
+            pass
+    return devs
                 
                 
                 
@@ -539,15 +539,15 @@ if __name__ == '__main__':
 
     stop_event = threading.Event()
     
-    #devs=scanUSB()
+    devs=scanUSB()
     
-    #if not 'grbl' in devs:
-        #lprint(f'devs {devs} не достаточно')
-        #exit()
-    #lprint(repr(devs))
+    if not 'mark' in devs:
+        lprint(f'devs {devs} не достаточно')
+        exit()
+    lprint(repr(devs))
 
-    #mrk=mark(stop_event,devs)
-    #mrk.start()
+    mrk=mark(stop_event,devs)
+    mrk.start()
     
     grb=grbs(stop_event,{'grbl':'/dev/ttyS2'})
     grb.start()
