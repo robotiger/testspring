@@ -504,29 +504,29 @@ class webrun(threading.Thread):
             time.sleep(1)
     
 
-def scanUSB():
-    devs={}
-    for portn in range(3):
-        portname=f'/dev/ttyUSB{portn}'
-        lprint(f'try open {portname}')
-        try:
-            with serial.Serial(portname, 115200, timeout=1) as ser:    
+#def scanUSB():
+    #devs={}
+    #for portn in range(3):
+        #portname=f'/dev/ttyUSB{portn}'
+        #lprint(f'try open {portname}')
+        #try:
+            #with serial.Serial(portname, 115200, timeout=1) as ser:    
                 
-                time.sleep(1)
-                ser.readline()
-                s=ser.readline().decode()
-                lprint(s)
-                if len(s)>0:
-                    if s[:4]=="Grbl":
-                        devs["grbl"]=portname
-                ser.write(b'?\r')
-                time.sleep(1)
-                s=ser.readline().decode()
-                if s[:1]=='0':
-                    devs["mark"]=portname
-        except:
-            pass
-    return devs
+                #time.sleep(1)
+                #ser.readline()
+                #s=ser.readline().decode()
+                #lprint(s)
+                #if len(s)>0:
+                    #if s[:4]=="Grbl":
+                        #devs["grbl"]=portname
+                #ser.write(b'?\r')
+                #time.sleep(1)
+                #s=ser.readline().decode()
+                #if s[:1]=='0':
+                    #devs["mark"]=portname
+        #except:
+            #pass
+    #return devs
                 
                 
                 
@@ -538,17 +538,17 @@ if __name__ == '__main__':
 
     stop_event = threading.Event()
     
-    devs=scanUSB()
+    #devs=scanUSB()
     
-    if not 'grbl' in devs:
-        lprint(f'devs {devs} не достаточно')
-        exit()
-    lprint(repr(devs))
+    #if not 'grbl' in devs:
+        #lprint(f'devs {devs} не достаточно')
+        #exit()
+    #lprint(repr(devs))
 
     #mrk=mark(stop_event,devs)
     #mrk.start()
     
-    grb=grbs(stop_event,devs)
+    grb=grbs(stop_event,{'grbl':'/dev/ttyS2'})
     grb.start()
     
     cmb=ModbusSerialClient('/dev/ttyS1',parity='E')
