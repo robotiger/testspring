@@ -98,7 +98,7 @@ if __name__ == '__main__':
     mrk.start()
     
     while(True):
-        force=mrk.ask
+        force=mrk.ask()
         jforce={'force':force,'forcetime':time.time()}
         lprint(repr(jforce))
         rr=requests.post('http://localhost:5000/forcemeasure',json=jforce) 
