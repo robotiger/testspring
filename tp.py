@@ -306,10 +306,11 @@ class measures(threading.Thread):
     
     def home_ym(self):
         self.atHome=False
+        lprint("включим привод Y")
         off("ena")
         time.sleep(5)
         if not gpYm.read_value(): #если не на датчике наедем на него
-            print("двигаемся на датчик Y минус")
+            lprint("двигаемся на датчик Y минус")
             grb.write("g91g21g1f1000y-60\n") #
             time.sleep(10)
         #останавливается самостоятельно по soft_reset
