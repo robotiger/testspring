@@ -169,39 +169,39 @@ class gp(threading.Thread):
     def read_value(self):
         return g.input(self.pin)
         
-class mark(threading.Thread):
-    def __init__(self,stop_event,port):
-        lprint("mark __init__")
-        threading.Thread.__init__(self)  
-        self.stop_event=stop_event
-        self.ok=False        
-        self.buf=''
-        self.port=port['mark']
-    def run(self): 
-        lprint("run mark")
-        with serial.Serial(self.port, 115200, timeout=1) as self.markserial:
-            while(not self.stop_event.is_set()):
-                lprint(f'mark port is {self.markserial._port}')
-                tmp=self.markserial.readline()
-                if len(tmp)>0:
-                    self.buf=tmp.decode()
-                    lprint(f'mark read {self.buf}')            
-        lprint("Mark closed!!!")
-    def ask(self):
-        firstMeasure=0
-        measure=-1
-        for i in range(6):
-            time.sleep(0.5)
-            self.markserial.write(b'?\r')
-            time.sleep(0.5)
-            if len(self.buf)>0:
-                measure=float(self.buf)
-            if measure > Fkr:
-                grb.soft_reset()
-            if abs(firstMeasure-measure)<0.1:
-                break
-            firstMeasure=measure
-        return measure
+#class mark(threading.Thread):
+    #def __init__(self,stop_event,port):
+        #lprint("mark __init__")
+        #threading.Thread.__init__(self)  
+        #self.stop_event=stop_event
+        #self.ok=False        
+        #self.buf=''
+        #self.port=port['mark']
+    #def run(self): 
+        #lprint("run mark")
+        #with serial.Serial(self.port, 115200, timeout=1) as self.markserial:
+            #while(not self.stop_event.is_set()):
+                #lprint(f'mark port is {self.markserial._port}')
+                #tmp=self.markserial.readline()
+                #if len(tmp)>0:
+                    #self.buf=tmp.decode()
+                    #lprint(f'mark read {self.buf}')            
+        #lprint("Mark closed!!!")
+    #def ask(self):
+        #firstMeasure=0
+        #measure=-1
+        #for i in range(6):
+            #time.sleep(0.5)
+            #self.markserial.write(b'?\r')
+            #time.sleep(0.5)
+            #if len(self.buf)>0:
+                #measure=float(self.buf)
+            #if measure > Fkr:
+                #grb.soft_reset()
+            #if abs(firstMeasure-measure)<0.1:
+                #break
+            #firstMeasure=measure
+        #return measure
 
 class grbs(threading.Thread):
     def __init__(self,stop_event,devs):
@@ -285,11 +285,12 @@ class measures(threading.Thread):
         grb.write(f"g91g1f1000y{Ycontact+config['lmin']-config['lstep']}\n")
         #input('pause before mesure')
         time.sleep(0.1)
-        force=mrk.ask()
+        #force=mrk.ask()
         for i in self.sx:
             grb.write(f"g91g1f1000y{config['lstep']}\n".encode())
             time.sleep(0.1)
-            force=mrk.ask()
+            #force=mrk.ask()
+            force=0.0
             self.forces.append(force) 
 
             lprint(f" dist {i}, force {force}")
@@ -543,8 +544,8 @@ if __name__ == '__main__':
         exit()
     lprint(repr(devs))
 
-    mrk=mark(stop_event,devs)
-    mrk.start()
+    #mrk=mark(stop_event,devs)
+    #mrk.start()
     
     grb=grbs(stop_event,devs)
     grb.start()
@@ -570,7 +571,7 @@ if __name__ == '__main__':
 
 
     time.sleep(10)
-    lprint(f'mark run is {mrk.ok}')
+    #lprint(f'mark run is {mrk.ok}')
     
 
     ms=measures(stop_event)
@@ -609,7 +610,7 @@ def joins():
     gpIdx.join()
     gpYm.join()
     gpYp.join()
-    mrk.join()
+    #mrk.join()
 
 
 
