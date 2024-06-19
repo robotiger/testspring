@@ -87,12 +87,12 @@ if __name__ == '__main__':
 
     stop_event = threading.Event()
     
-    #devs=scanUSB()
+    devs=scanUSB()
     
-    #if not 'mark' in devs:
-        #lprint(f'devs {devs} не достаточно')
-        #exit()
-    #lprint(repr(devs))
+    if not 'mark' in devs:
+        lprint(f'devs {devs} не достаточно')
+        exit()
+    lprint(repr(devs))
 
     mrk=mark(stop_event,devs) #{'mark':'/dev/ttyUSB0'})
     mrk.start()
