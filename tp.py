@@ -551,8 +551,6 @@ if __name__ == '__main__':
     gpYm.callback_stop=grb.soft_reset
     gpYp.callback_stop=grb.soft_reset
 
-    web=webrun(stop_event)
-    web.start()
 
     
     time.sleep(10)
@@ -567,6 +565,9 @@ if __name__ == '__main__':
     cmb.write_register(0x1010,0x0,1)
     
     ms=measures(stop_event)
+
+    web=webrun(stop_event)
+    web.start()
     
 
     while(True):
