@@ -225,14 +225,14 @@ class grbs(threading.Thread):
     def write(self,data):
         if type(data)==type('str'):
             data=data.encode()
-        x=self.grblserial.write(data)
+        x=self.grblserial.write(data) # sw
         lprint(f"sent to grbl {x} byte: {data}")
         
     def soft_reset(self):
-        self.write(b'!')
+        self.write(b'!') #sw
         setmb(76,100)
         time.sleep(1)
-        self.write(b'\x18')
+        self.write(b'\x18')#sw
         setmb(0x1010,0)
         lprint("soft reset done")
 
@@ -600,7 +600,22 @@ if __name__ == '__main__':
             lprint(f"{config['cycles_complete']}<{config['cycles']}")
             if config['cycles_complete']<config['cycles']:
                 ms.run_test()
-            status['to_do']='nothing'            
+            status['to_do']='nothing'      
+            
+        if status['to_do']=='mtest':
+            ms.runmesure()
+            status['to_do']='nothing'      
+
+        if status['to_do']=='rtest':
+            ms.find_edge()
+            status['to_do']='nothing'    
+            
+        if status['to_do']=='ktest':
+            runspeed= int(config["freq"]*38*60/17)
+            ms.runtest(runspeed,config['cyclesbetween'])
+            status['to_do']='nothing'      
+
+            
 
         time.sleep(1)
         

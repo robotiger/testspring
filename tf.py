@@ -101,6 +101,21 @@ def execute_runtest():
     tp_status['to_do']="runtest"
     return redirect(url_for('index'))
 
+@app.route('/rtest', methods =['GET'])
+def execute_rtest():
+    tp_status['to_do']="rtest"
+    return redirect(url_for('index'))
+
+@app.route('/mtest', methods =['GET'])
+def execute_mtest():
+    tp_status['to_do']="mtest"
+    return redirect(url_for('index'))
+
+@app.route('/ktest', methods =['GET'])
+def execute_ktest():
+    tp_status['to_do']="ktest"
+    return redirect(url_for('index'))
+
 @app.route('/stoptest',methods =['GET'])
 def execute_stoptest():
     tp_status['to_do']="stoptest"
