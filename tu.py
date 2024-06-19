@@ -221,9 +221,35 @@ if __name__ == '__main__':
     print(devs)
     time.sleep(10)
     
+   
+    gpIdx=gp(stop_event,"idx")
+    gpIdx.start()
+    
+    gpYp=gp(stop_event,"yp")
+    gpYp.start()
+    
+    gpYm=gp(stop_event,"ym")
+    gpYm.start()
+    
+    gpIdx.callback_stop=grb.soft_reset
+    gpYm.callback_stop=grb.soft_reset
+    gpYp.callback_stop=grb.soft_reset    
+    
+    cmb=ModbusSerialClient('/dev/ttyS1',parity='E')
+    cmb.connect()
+    cmb.write_register(0x1010,0x0,1)    
+    
+    grb=grbs(stop_event,devs)
+    grb.start()    
+    
     mrk=mark(stop_event,devs)
     mrk.start()
     
     
     for i in range(1000):
         print(mrk.ask())
+        grb.write("g91g21g1f1000y1\n") 
+        time.sleep(1)
+        grb.write("g91g21g1f1000y-1\n") 
+        time.sleep(1)
+        
