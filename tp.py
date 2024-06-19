@@ -181,11 +181,11 @@ class mark(threading.Thread):
         lprint("run mark")
         with serial.Serial(self.port, 115200, timeout=1) as self.markserial:
             while(not self.stop_event.is_set()):
-                lprint('mark port is',self.markserial._port)
+                lprint(f'mark port is {self.markserial._port}')
                 tmp=self.markserial.readline()
                 if len(tmp)>0:
                     self.buf=tmp.decode()
-                    lprint("mark read",self.buf)            
+                    lprint(f'mark read {self.buf}')            
         lprint("Mark closed!!!")
     def ask(self):
         firstMeasure=0
@@ -216,7 +216,7 @@ class grbs(threading.Thread):
         with serial.Serial(self.port, 115200, timeout=1) as self.grblserial:
             buf=b''
             while(not self.stop_event.is_set()):
-                print('grbl port is',self.grblserial._port)
+                print(f'grbl port is {self.grblserial._port}')
                 tmp=self.grblserial.readline()
                 if len(tmp)>0:
                     self.buf=tmp.decode()
@@ -541,7 +541,7 @@ if __name__ == '__main__':
     if len(devs)<2:
         lprint(f'devs {devs} не достаточно')
         exit()
-    lprint(devs)
+    lprint(repr(devs))
 
     mrk=mark(stop_event,devs)
     mrk.start()
