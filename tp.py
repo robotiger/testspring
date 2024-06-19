@@ -164,7 +164,6 @@ class gp(threading.Thread):
         return g.input(self.pin)
         
 class mark(threading.Thread):
-
     def __init__(self,stop_event,port):
         logInf("mark __init__")
         threading.Thread.__init__(self)  
@@ -172,20 +171,16 @@ class mark(threading.Thread):
         self.ok=False        
         self.buf=''
         self.port=port['mark']
-
     def run(self): 
         logInf("run mark")
-
         with serial.Serial(self.port, 115200, timeout=1) as self.markserial:
             while(not self.stop_event.is_set()):
                 print('mark port is',self.markserial._port)
                 tmp=self.markserial.readline()
                 if len(tmp)>0:
                     self.buf=tmp.decode()
-                print("mark read",self.buf)            
+                    print("mark read",self.buf)            
         print("Mark closed!!!")
-    
-    
     def ask(self):
         firstMeasure=0
         measure=-1
@@ -197,7 +192,6 @@ class mark(threading.Thread):
                 measure=float(self.buf)
             if measure > Fkr:
                 grb.soft_reset()
-                
             if abs(firstMeasure-measure)<0.1:
                 break
             firstMeasure=measure
@@ -539,8 +533,17 @@ if __name__ == '__main__':
         print(f'devs {devs} не достаточно')
         exit()
     print(devs)
+
+    mrk=mark(stop_event,devs)
+    mrk.start()
+    
     grb=grbs(stop_event,devs)
     grb.start()
+    
+    cmb=ModbusSerialClient('/dev/ttyS1',parity='E')
+    cmb.connect()
+    cmb.write_register(0x1010,0x0,1)
+    
     
     gpIdx=gp(stop_event,"idx")
     gpIdx.start()
@@ -556,18 +559,11 @@ if __name__ == '__main__':
     gpYp.callback_stop=grb.soft_reset
 
 
-    
+
     time.sleep(10)
+    print(f'mark run is {mrk.ok}')
     
-    mrk=mark(stop_event,devs)
-    mrk.start()
-    time.sleep(10)
-    #print(f'mark run is {mrk.ok}')
-    
-    cmb=ModbusSerialClient('/dev/ttyS1',parity='E')
-    cmb.connect()
-    cmb.write_register(0x1010,0x0,1)
-    
+
     ms=measures(stop_event)
 
     web=webrun(stop_event)
