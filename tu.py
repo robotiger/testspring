@@ -395,6 +395,47 @@ class measures(threading.Thread):
         config['startrow']+=1
         wb.save(config['xlfilename'])
 
+class webrun(threading.Thread):
+    def __init__(self,stop_event):
+        threading.Thread.__init__(self)
+        self.stop_event=stop_event
+
+    def run(self):
+        global status
+        global config
+        res_ok=False
+        while(not self.stop_event.is_set()):
+            try:
+                res=requests.get('http://localhost:5000/status')
+                if res.ok:
+                    newstatus=res.json()
+                    res_ok=res.ok
+                status['to_do']=newstatus['to_do']
+                for x in tab:
+                    config[x]=newstatus[x]
+                #print(f"got status to_do {newstatus['to_do']} \n{config}")
+                print('.',end='')
+            except:
+                print('-',end='')
+                #print("отключено приложение веб")
+            if res_ok:
+                
+                if gpIdx.count>=0:
+                    status['cycles_done']=config["cycles_complete"]+config["cyclesbetween"]-gpIdx.count
+                else:
+                    status['cycles_done']=0
+                    
+                if status['cycles_done']>0:
+                    status['progress']=status['cycles_done']*100//config["cycles"]
+                else:
+                    status['progress']=0
+                try:
+                    rr=requests.post('http://localhost:5000/status',json=status) 
+                    #print(f"sent status {status}")
+                    
+                except:
+                    print("отключено приложение веб")            
+            time.sleep(1)
     
 def scanUSB():
     devs={}
@@ -462,6 +503,9 @@ if __name__ == '__main__':
     mrk.start()
     
     ms=measures(stop_event)
+    
+    web=webrun(stop_event)
+    web.start()    
     
     for i in range(1000):
         ms.home_ym()
