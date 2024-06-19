@@ -13,6 +13,12 @@ import sqlitedict
 import ifcfg
 import requests
 from scipy.optimize import minimize
+import logging
+
+
+logging.basicConfig(
+    format='%(threadName)s %(name)s %(levelname)s: %(message)s',
+    level=logging.INFO)
 
 
 
@@ -64,8 +70,8 @@ mrk=None
 used_gpio_pins={"son":7,"ena":12,"idx":26,"yp":15,"ym":22}
 
 
-def logInf(s): 
-    print(s)
+def lprint(s): 
+    logging.info(s)
     #loglenmax=10000000   
     #logging.basicConfig(format='%(asctime)s | %(message)s', datefmt='%Y/%m/%d %H: %M: %S ', filename=logname, level=logging.INFO)
     #logging.info(s)
@@ -165,14 +171,14 @@ class gp(threading.Thread):
         
 class mark(threading.Thread):
     def __init__(self,stop_event,port):
-        logInf("mark __init__")
+        lprint("mark __init__")
         threading.Thread.__init__(self)  
         self.stop_event=stop_event
         self.ok=False        
         self.buf=''
         self.port=port['mark']
     def run(self): 
-        logInf("run mark")
+        lprint("run mark")
         with serial.Serial(self.port, 115200, timeout=1) as self.markserial:
             while(not self.stop_event.is_set()):
                 print('mark port is',self.markserial._port)
@@ -199,14 +205,14 @@ class mark(threading.Thread):
 
 class grbs(threading.Thread):
     def __init__(self,stop_event,devs):
-        logInf("grbs __init__ ")
+        lprint("grbs __init__ ")
         threading.Thread.__init__(self)  
         self.stop_event=stop_event
         self.port=devs['grbl']
         self.pack=b''
         self.length=1
     def run(self): 
-        logInf("run grbs")
+        lprint("run grbs")
         with serial.Serial(self.port, 115200, timeout=1) as self.grblserial:
             buf=b''
             while(not self.stop_event.is_set()):
@@ -214,13 +220,13 @@ class grbs(threading.Thread):
                 tmp=self.grblserial.readline()
                 if len(tmp)>0:
                     self.buf=tmp.decode()
-                    logInf(f'grbs rcv {buf}')
+                    lprint(f'grbs rcv {buf}')
                     
     def write(self,data):
         if type(data)==type('str'):
             data=data.encode()
         x=self.grblserial.write(data)
-        logInf(f"sent to grbl {x} byte: {data}")
+        lprint(f"sent to grbl {x} byte: {data}")
         
     def soft_reset(self):
         self.write(b'!')
@@ -228,7 +234,7 @@ class grbs(threading.Thread):
         time.sleep(1)
         self.write(b'\x18')
         setmb(0x1010,0)
-        logInf("soft reset done")
+        lprint("soft reset done")
 
 
 
@@ -243,7 +249,7 @@ class measures(threading.Thread):
         self.sx=[]
         
     def find_edge(self):
-        logInf("start find edge")
+        lprint("start find edge")
         on("son")
         for t in range(5):
             
@@ -256,7 +262,7 @@ class measures(threading.Thread):
                 #print(gpIdx.stop,gpIdx.count,gpIdx.last)
         # если не вал не повернулся вернём ошибку        
         return gpIdx.count==1
-        #logInf("edge found rotation stop at idx")
+        #lprint("edge found rotation stop at idx")
         #time.sleep(2)
     
     def runtest(self,speed,count):
@@ -273,7 +279,7 @@ class measures(threading.Thread):
 
     def runmesure(self):
         self.forces=[]
-        logInf("move y ")
+        lprint("move y to first mesuring distance")
         off("ena")
         
         grb.write(f"g91g1f1000y{Ycontact+config['lmin']-config['lstep']}\n")
@@ -286,7 +292,7 @@ class measures(threading.Thread):
             force=mrk.ask()
             self.forces.append(force) 
 
-            logInf(f" dist {i}, force {force}")
+            lprint(f" dist {i}, force {force}")
 
         grb.write(f"g91g1f1000y-{config['lmax']}\n".encode())
         time.sleep(5)
@@ -321,16 +327,16 @@ class measures(threading.Thread):
         grb.write("g91g21g1f1000y0.3\n") 
         time.sleep(0.5)    
         if gpYm.read_value(): #не сошли с датчика. ошибка
-            logInf("не сошли с датчика. ошибка")
+            lprint("не сошли с датчика. ошибка")
             #stop_event.set()
         else:    
             grb.write("g91g21g1f10y-3\n")
             time.sleep(10)
             if gpYm.read_value():
-                logInf("по оси Y вышли в ноль по датчику (ym)")
+                lprint("по оси Y вышли в ноль по датчику (ym)")
                 self.atHome=True
             else:
-                logInf("датчик ym не нашли")
+                lprint("датчик ym не нашли")
                 #stop_event.set()
         return self.atHome
                                 
@@ -472,9 +478,9 @@ class webrun(threading.Thread):
                 for x in tab:
                     config[x]=newstatus[x]
                 #print(f"got status to_do {newstatus['to_do']} \n{config}")
-                print('.',end='')
+                lprint('.',end='')
             except:
-                print('-',end='')
+                lprint('-',end='')
                 #print("отключено приложение веб")
             if res_ok:
                 
@@ -492,7 +498,7 @@ class webrun(threading.Thread):
                     #print(f"sent status {status}")
                     
                 except:
-                    print("отключено приложение веб")            
+                    lprint("отключено приложение веб")            
             time.sleep(1)
     
 
@@ -500,14 +506,14 @@ def scanUSB():
     devs={}
     for portn in range(3):
         portname=f'/dev/ttyUSB{portn}'
-        print(f'try open {portname}')
+        lprint(f'try open {portname}')
         try:
             with serial.Serial(portname, 115200, timeout=1) as ser:    
                 
                 time.sleep(1)
                 ser.readline()
                 s=ser.readline().decode()
-                print(s)
+                lprint(s)
                 if len(s)>0:
                     if s[:4]=="Grbl":
                         devs["grbl"]=portname
@@ -533,9 +539,9 @@ if __name__ == '__main__':
     devs=scanUSB()
     
     if len(devs)<2:
-        print(f'devs {devs} не достаточно')
+        lprint(f'devs {devs} не достаточно')
         exit()
-    print(devs)
+    lprint(devs)
 
     mrk=mark(stop_event,devs)
     mrk.start()
@@ -564,7 +570,7 @@ if __name__ == '__main__':
 
 
     time.sleep(10)
-    print(f'mark run is {mrk.ok}')
+    lprint(f'mark run is {mrk.ok}')
     
 
     ms=measures(stop_event)
@@ -575,21 +581,21 @@ if __name__ == '__main__':
 
     while(True):
 
-        print(f"main {status['to_do']} \n status {status}\n config {config}")
+        lprint(f"main {status['to_do']} \n status {status}\n config {config}")
         
         if status['to_do']=='setspring':
-            print(" find edge")
+            lprint(" find edge")
             if ms.find_edge():
                 status['to_do']='nofindedge'
             else:
-                print("go home ")
+                lprint("go home ")
                 if ms.home_ym():
                     status['to_do']='athome'
                 else:
                     status['to_do']='notathome'
                     
         if status['to_do']=='runtest':
-            print(f"{config['cycles_complete']}<{config['cycles']}")
+            lprint(f"{config['cycles_complete']}<{config['cycles']}")
             if config['cycles_complete']<config['cycles']:
                 ms.run_test()
             status['to_do']='nothing'            
