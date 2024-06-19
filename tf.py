@@ -43,7 +43,7 @@ tab={
  }
 
 
-tp_status={"progress":0,"cycles_done":0,"to_do":"nothing","clength":0,"ckx":0,"shrink":0}
+tp_status={"progress":0,"cycles_done":0,"to_do":"nothing","clength":0,"ckx":0,"shrink":0,"force":0}
 tmp={}
 
 @app.route('/', methods=['GET', 'POST'])
@@ -75,7 +75,8 @@ def sendstatus():
     global tp_status
     if request.method == 'POST':
         for item in tp_status:
-            tp_status[item]=request.json.get(item)
+            if item != 'force':
+                tp_status[item]=request.json.get(item)
     data={}
 
     for x in config:
@@ -126,6 +127,16 @@ def execute_reboot():
 @app.route('/progressbar',methods =['GET','POST'])
 def progressbar():
     return  jsonify(tp_status)
+
+@app.route('/forcemeasure',methods =['GET','POST'])
+def forcemeasure():
+    global tp_status
+    if request.method == 'POST':
+        tp_status['force']=request.json.get('force')
+        tp_status['forcetime']=request.json.get('forcetime')
+    return jsonify(data|tp_status)
+        
+
 
 
         

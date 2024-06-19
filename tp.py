@@ -13,7 +13,7 @@ import sqlitedict
 import ifcfg
 import requests
 from scipy.optimize import minimize
-import logging
+
 
 
 logging.basicConfig(
@@ -56,8 +56,8 @@ Fkr=200
 
 #totalCycles=200
 #mesureCycles=20
-#maxspeed=2500
-#runspeed=1200
+maxspeed=2500
+
 
 status={"progress":0,"cycles_done":0,"to_do":"nothing","clength":0,"ckx":0,"shrink":0,"status":""}
 config={}
