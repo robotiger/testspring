@@ -121,18 +121,21 @@ class grbs(threading.Thread):
         self.length=1
     def run(self): 
         logInf("run grbs")
-        with serial.Serial(self.port, 115200, timeout=1) as self.ser:
+        with serial.Serial(self.port, 115200, timeout=1) as self.grblserial:
             buf=b''
             while(not self.stop_event.is_set()):
-                buf=self.ser.readline().decode()
-                if len(buf)>0:
+                print('grbl port is',self.grblserial._port)
+                tmp=self.grblserial.readline()
+                if len(tmp)>0:
+                    self.buf=tmp.decode()
                     logInf(f'grbs rcv {buf}')
                     
     def write(self,data):
         if type(data)==type('str'):
             data=data.encode()
-        x=self.ser.write(data)
+        x=self.grblserial.write(data)
         logInf(f"sent to grbl {x} byte: {data}")
+        
     def soft_reset(self):
         self.write(b'!')
         setmb(76,100)
