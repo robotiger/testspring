@@ -301,18 +301,21 @@ class measures(threading.Thread):
         off("ena")
         time.sleep(5)
         if not gpYm.read_value(): #если не на датчике наедем на него
+            print("двигаемся на датчик Y минус")
             grb.write("g91g21g1f1000y-60\n") #
             time.sleep(10)
         #останавливается самостоятельно по soft_reset
     
         for i in range(20):
             if gpYm.read_value(): #уже за датчиком, нужно сойти с датчика
+                print("двигаемся с датчика Y минус")
                 grb.write("g91g21g1f1000y1\n") #сходим на 1 мм
                 time.sleep(1)
                 #if mrk.ask()>Fkr:
                 #    grb.write("g91g21g1f1000y-1\n")
                 # надо вернуть   
             else:
+                print("съехали с датчика Y минус")
                 break #как только сошли прекращаем движение
                 
         grb.write("g91g21g1f1000y0.3\n") 
