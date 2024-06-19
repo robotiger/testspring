@@ -576,7 +576,7 @@ if __name__ == '__main__':
     #lprint(f'mark run is {mrk.ok}')
     
 
-    ms=measures(stop_event)
+    ms=measures()
 
     web=webrun(stop_event)
     web.start()
