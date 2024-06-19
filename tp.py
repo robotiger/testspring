@@ -240,13 +240,13 @@ class grbs(threading.Thread):
 
 
 
-class measures(threading.Thread):
+class measures(): #threading.Thread):
     
-    def __init__(self,stop_event):
-        threading.Thread.__init__(self)
-        self.stop_event=stop_event   
-        self.atHome=False
-        self.sx=[]
+    #def __init__(self,stop_event):
+        #threading.Thread.__init__(self)
+        #self.stop_event=stop_event   
+        #self.atHome=False
+        #self.sx=[]
         
     def find_edge(self):
         lprint("start find edge")
