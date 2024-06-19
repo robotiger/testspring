@@ -71,8 +71,8 @@ class mark(threading.Thread):
             time.sleep(0.5)
             if len(self.buf)>0:
                 measure=float(self.buf)
-            if measure > Fkr:
-                grb.soft_reset()
+            #if measure > Fkr:
+            #    grb.soft_reset()
             if abs(firstMeasure-measure)<0.1:
                 break
             firstMeasure=measure
