@@ -178,6 +178,7 @@ class grbs(threading.Thread):
         with serial.Serial(self.port, 115200, timeout=1) as self.grblserial:
             buf=b''
             while(not self.stop_event.is_set()):
+                print('grbl port is',self.grblserial._port)
                 tmp=self.grblserial.readline()
                 if len(tmp)>0:
                     self.buf=tmp.decode()
@@ -210,14 +211,14 @@ class mark(threading.Thread):
 
     def run(self): 
         logInf("run mark")
-        
-        val=None
+
         with serial.Serial(self.port, 115200, timeout=1) as self.markserial:
             while(not self.stop_event.is_set()):
+                print('mark port is',self.markserial._port)
                 tmp=self.markserial.readline()
                 if len(tmp)>0:
                     self.buf=tmp.decode()
-                #print("mark read",self.buf)            
+                print("mark read",self.buf)            
         print("Mark closed!!!")
     
     
@@ -347,6 +348,7 @@ class measures(threading.Thread):
         if not self.atHome:
             self.home_ym()
         self.cycles=0
+        self.xlSaveRow(self.runmesure())        
         #input('pause')
         while(True):
             runspeed= int(config["freq"]*38*60/17)
@@ -536,7 +538,7 @@ if __name__ == '__main__':
     if len(devs)<2:
         print(f'devs {devs} не достаточно')
         exit()
-    
+    print(devs)
     grb=grbs(stop_event,devs)
     grb.start()
     
