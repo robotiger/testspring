@@ -181,12 +181,12 @@ class mark(threading.Thread):
         lprint("run mark")
         with serial.Serial(self.port, 115200, timeout=1) as self.markserial:
             while(not self.stop_event.is_set()):
-                print('mark port is',self.markserial._port)
+                lprint('mark port is',self.markserial._port)
                 tmp=self.markserial.readline()
                 if len(tmp)>0:
                     self.buf=tmp.decode()
-                    print("mark read",self.buf)            
-        print("Mark closed!!!")
+                    lprint("mark read",self.buf)            
+        lprint("Mark closed!!!")
     def ask(self):
         firstMeasure=0
         measure=-1
@@ -477,11 +477,11 @@ class webrun(threading.Thread):
                 status['to_do']=newstatus['to_do']
                 for x in tab:
                     config[x]=newstatus[x]
-                #print(f"got status to_do {newstatus['to_do']} \n{config}")
-                lprint('.',end='')
+                lprint(f"got status to_do {newstatus['to_do']} \n{config}")
+                #print('.',end='')
             except:
-                lprint('-',end='')
-                #print("отключено приложение веб")
+                #print('-',end='')
+                lprint("отключено приложение веб")
             if res_ok:
                 
                 if gpIdx.count>=0:
