@@ -13,6 +13,12 @@ import sqlitedict
 import ifcfg
 import requests
 from scipy.optimize import minimize
+import logging
+
+
+logging.basicConfig(
+    format='%(threadName)s %(name)s %(levelname)s: %(message)s',
+    level=logging.INFO)
 
 
 Ycontact=27.5
@@ -59,7 +65,9 @@ def read_value(pin):
     return val
 
 def logInf(s): 
-    print(s)
+    logging.info(s)
+    #print(s)
+    
 
 
 def setmb(adr,val):
@@ -126,7 +134,7 @@ class grbs(threading.Thread):
         with serial.Serial(self.port, 115200, timeout=1) as self.grblserial:
             buf=b''
             while(not self.stop_event.is_set()):
-                print('grbl port is',self.grblserial._port)
+                logInf('grbl port is',self.grblserial._port)
                 tmp=self.grblserial.readline()
                 if len(tmp)>0:
                     self.buf=tmp.decode()
@@ -166,9 +174,9 @@ class mark(threading.Thread):
         with serial.Serial(self.port, 115200, timeout=1) as self.ser:
             while(not self.stop_event.is_set()):
                 self.buf=self.ser.readline().decode()
-                print("mark read",self.buf)            
+                logInf("mark read",self.buf)            
             
-        print("Mark closed!!!")
+        logInf("Mark closed!!!")
         
 
     def write(self,data):
@@ -421,10 +429,11 @@ class webrun(threading.Thread):
                 for x in tab:
                     config[x]=newstatus[x]
                 #print(f"got status to_do {newstatus['to_do']} \n{config}")
-                print('.',end='')
+                #print('.',end='')
             except:
-                print('-',end='')
+                #print('-',end='')
                 #print("отключено приложение веб")
+                pass
             if res_ok:
                 
                 if gpIdx.count>=0:
@@ -441,14 +450,14 @@ class webrun(threading.Thread):
                     #print(f"sent status {status}")
                     
                 except:
-                    print("отключено приложение веб")            
+                    logInf("отключено приложение веб")            
             time.sleep(1)
     
 def scanUSB():
     devs={}
     for portn in range(3):
         portname=f'/dev/ttyUSB{portn}'
-        print(f'try open {portname}')
+        logInf(f'try open {portname}')
         try:
             with serial.Serial(portname, 115200, timeout=1) as ser:    
                 
@@ -480,7 +489,7 @@ if __name__ == '__main__':
     if len(devs)<2:
         print(f'devs {devs} не достаточно')
         exit()
-    print(devs)
+    logInf(devs)
     time.sleep(10)
     
    
@@ -516,7 +525,7 @@ if __name__ == '__main__':
     
     for i in range(1000):
         ms.home_ym()
-        print(mrk.ask())
+        logInf(mrk.ask())
         ms.runmesure()
         grb.write("g91g21g1f1000y1\n") 
         time.sleep(1)
