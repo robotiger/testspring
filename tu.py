@@ -181,6 +181,220 @@ class mark(threading.Thread):
                 break
             firstMeasure=measure
         return measure
+
+class measures(threading.Thread):
+    
+    def __init__(self,stop_event):
+        threading.Thread.__init__(self)
+        self.stop_event=stop_event   
+        self.atHome=False
+        self.sx=[]
+        
+    def find_edge(self):
+        logInf("start find edge")
+        on("son")
+        for t in range(5):
+            
+            gpIdx.count=1
+            gpIdx.stop=0
+            grb.write(b"g91g1f1000x1000\n")
+            time.sleep(5)
+            if gpIdx.count==0:
+                break
+                #print(gpIdx.stop,gpIdx.count,gpIdx.last)
+        # если не вал не повернулся вернём ошибку        
+        return gpIdx.count==1
+        #logInf("edge found rotation stop at idx")
+        #time.sleep(2)
+    
+    def runtest(self,speed,count):
+        global status
+        gpIdx.stop=0
+        gpIdx.count=count
+        runmb(speed)
+        while(gpIdx.count>0):
+            #print(gpIdx.stop,gpIdx.count,gpIdx.last)
+            if status['to_do']=='stoptest':
+                break               
+            time.sleep(0.5)        
+        runmb(0)
+
+    def runmesure(self):
+        self.forces=[]
+        logInf("move y ")
+        off("ena")
+        
+        grb.write(f"g91g1f1000y{Ycontact+config['lmin']-config['lstep']}\n")
+        #input('pause before mesure')
+        time.sleep(0.1)
+        force=mrk.ask()
+        for i in self.sx:
+            grb.write(f"g91g1f1000y{config['lstep']}\n".encode())
+            time.sleep(0.1)
+            force=mrk.ask()
+            self.forces.append(force) 
+
+            logInf(f" dist {i}, force {force}")
+
+        grb.write(f"g91g1f1000y-{config['lmax']}\n".encode())
+        time.sleep(5)
+        #on("ena")
+        return self.forces
+
+    
+    
+    
+    def home_ym(self):
+        self.atHome=False
+        off("ena")
+        time.sleep(5)
+        if not gpYm.read_value(): #если не на датчике наедем на него
+            grb.write("g91g21g1f1000y-60\n") #
+            time.sleep(10)
+        #останавливается самостоятельно по soft_reset
+    
+        for i in range(20):
+            if gpYm.read_value(): #уже за датчиком, нужно сойти с датчика
+                grb.write("g91g21g1f1000y1\n") #сходим на 1 мм
+                time.sleep(1)
+                if mrk.ask()>Fkr:
+                    grb.write("g91g21g1f1000y-1\n")
+                    
+            else:
+                break #как только сошли прекращаем движение
+                
+        grb.write("g91g21g1f1000y0.3\n") 
+        time.sleep(0.5)    
+        if gpYm.read_value(): #не сошли с датчика. ошибка
+            logInf("не сошли с датчика. ошибка")
+            #stop_event.set()
+        else:    
+            grb.write("g91g21g1f10y-3\n")
+            time.sleep(10)
+            if gpYm.read_value():
+                logInf("по оси Y вышли в ноль по датчику (ym)")
+                self.atHome=True
+            else:
+                logInf("датчик ym не нашли")
+                #stop_event.set()
+        return self.atHome
+                                
+    def run_test(self):
+        off("ena")
+        on("son")
+    
+        time.sleep(5)
+    
+        self.xlMakeHeader()
+        self.home_ym()
+        if not self.atHome:
+            self.home_ym()
+        self.cycles=0
+        #input('pause')
+        while(True):
+            runspeed= int(config["freq"]*38*60/17)
+
+            if status['to_do']=='stoptest':
+                break             
+            runcycles=min(config["cyclesbetween"],config["cycles"]-config['cycles_complete'])
+            self.runtest(runspeed,runcycles)
+            time.sleep(2)
+            if status['to_do']=='stoptest':
+                break                 
+            self.find_edge()
+            
+            self.xlSaveRow(self.runmesure())
+            
+            if status['to_do']=='stoptest':
+                break            
+            self.home_ym()
+            if status['to_do']=='stoptest':
+                break                 
+        
+            if config['cycles_complete']>=config["cycles"]:
+                status['to_do']='nothing'
+                break
+            if stop_event.is_set():
+                break
+        time.sleep(1)
+        
+        on("ena")
+        off("son")        
+        
+        
+    def xlMakeHeader(self):
+        if os.path.exists(config['xlfilename']):
+            wb=xl.load_workbook(config['xlfilename'])
+        else:
+            wb=xl.Workbook()
+        
+        ws=wb.active
+        
+        ws.cell(row=1,column=2,value='Протокол тестирования пружины')
+        ws.cell(row=1,column=1,value=datetime.datetime.now())
+        
+        row=2
+
+        
+        for t in tab:
+            ws.cell(row=row,column=1,value=tab[t])
+            ws.cell(row=row,column=5,value=config[t])
+            row+=1
+        
+        ws.cell(row=row,column=1,value='Дата')
+        ws.cell(row=row,column=2,value='Циклы')
+        ws.cell(row=row,column=3,value='Длина')
+        ws.cell(row=row,column=4,value='Кх')
+        ws.cell(row=row,column=5,value='Усадка')
+    
+        column=6
+        self.sx=list(range(config['lmin'],config['lmax']+config['lstep'],config['lstep']))
+        
+        for i in self.sx: 
+            #числа только целые пока
+            ws.cell(row=row,column=column,value=i)
+            column+=1  
+        config['startrow']=row+1    
+        wb.save(config['xlfilename'])
+    
+    def xlSaveRow(self,forces):
+        global status
+        wb=xl.load_workbook(config['xlfilename'])
+        ws=wb.active
+        
+        config['cycles_complete']+=config["cyclesbetween"]
+        gpIdx.count=config["cyclesbetween"] #чтобы прогресс не скакал а двигался плавно
+        mc=config['startrow']
+        
+        self.sx=list(range(config['lmin'],config['lmax']+config['lstep'],config['lstep']))
+        sx=np.array(self.sx)
+        sf=np.array(self.forces)
+        
+        #немного расчетов
+        def f(x,sx,sf):
+            return ((sx*x[0]+x[1]-sf)**2).sum()
+        res=minimize(f,x0=[3,3],args=(sx,sf))
+        ckx=res.x[0]
+        clength=res.x[1]/res.x[0]+config["ldistance"]
+        # сохраняем результаты расчета в статус для обновления веб страницы
+        status['ckx']=ckx
+        status['clength']=clength
+        status['shrink']=config['slength']-clength
+
+        #заполняем строку данными
+        ws.cell(row=mc,column=1,value=datetime.datetime.now()) 
+        ws.cell(row=mc,column=2,value=config['cycles_complete']) 
+        ws.cell(row=mc,column=3,value=clength) 
+        ws.cell(row=mc,column=4,value=ckx) 
+        ws.cell(row=mc,column=5,value=config['slength']-clength) 
+        
+        
+        for i in range(len(forces)):
+            ws.cell(row=mc,column=i+6,value=self.forces[i]) 
+            
+        config['startrow']+=1
+        wb.save(config['xlfilename'])
+
     
 def scanUSB():
     devs={}
@@ -247,8 +461,10 @@ if __name__ == '__main__':
     mrk=mark(stop_event,devs)
     mrk.start()
     
+    ms=measures(stop_event)
     
     for i in range(1000):
+        ms.home_ym()
         print(mrk.ask())
         grb.write("g91g21g1f1000y1\n") 
         time.sleep(1)
