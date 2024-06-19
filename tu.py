@@ -28,6 +28,7 @@ mrk=None
 
 used_gpio_pins={"son":7,"ena":12,"idx":26,"yp":15,"ym":22}
 
+config=sqlitedict.SqliteDict('config_tp.db')
 
 #Переключение вывода на выход и выдача на него единицы
 def on(pin):
