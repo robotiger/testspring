@@ -510,6 +510,7 @@ if __name__ == '__main__':
     for i in range(1000):
         ms.home_ym()
         print(mrk.ask())
+        ms.runmesure()
         grb.write("g91g21g1f1000y1\n") 
         time.sleep(1)
         grb.write("g91g21g1f1000y-1\n") 
