@@ -25,7 +25,6 @@ def scanUSB():
         lprint(f'try open {portname}')
         try:
             with serial.Serial(portname, 115200, timeout=1) as ser:    
-
                 time.sleep(1)
                 ser.readline()
                 s=ser.readline().decode()

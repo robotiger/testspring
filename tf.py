@@ -134,7 +134,7 @@ def forcemeasure():
     if request.method == 'POST':
         tp_status['force']=request.json.get('force')
         tp_status['forcetime']=request.json.get('forcetime')
-    return jsonify(data|tp_status)
+    return jsonify({"result":"stored"})
         
 
 
