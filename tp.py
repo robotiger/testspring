@@ -321,7 +321,7 @@ class measures():
         runmb(0)
 
     def runmesure(self):
-
+        global status
         #Перед измерением Выйдем в ноль Y 
         self.home_ym()
         #повернём эксцентрик в исходное
@@ -349,7 +349,7 @@ class measures():
         grb.write(f"g91g1f1000y-{Ycontact+config['lmax']}\n".encode())
         time.sleep(5)
         #on("ena")
-        global status
+
         status["forces"]=self.forces
         return self.forces
 
