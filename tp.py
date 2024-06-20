@@ -566,6 +566,16 @@ def scanUSB():
 # ****************main ********************
 if __name__ == '__main__':
 
+    gpIdx=gp(stop_event,"idx")
+    gpIdx.start()
+    
+    gpYp=gp(stop_event,"yp")
+    gpYp.start()
+    
+    gpYm=gp(stop_event,"ym")
+    gpYm.start()
+
+
     on("ena")
     off("son")    
 
@@ -589,15 +599,7 @@ if __name__ == '__main__':
     cmb.write_register(0x1010,0x0,1)
     
     
-    gpIdx=gp(stop_event,"idx")
-    gpIdx.start()
-    
-    gpYp=gp(stop_event,"yp")
-    gpYp.start()
-    
-    gpYm=gp(stop_event,"ym")
-    gpYm.start()
-    
+
     gpIdx.callback_stop=grb.soft_reset
     gpYm.callback_stop=grb.soft_reset
     gpYp.callback_stop=grb.soft_reset
