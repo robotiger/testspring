@@ -355,7 +355,7 @@ class measures():
             status["forces"]=self.forces
             return True
         else:            
-            lprint("Не вышли в ноль до начала измерения")
+            lprint(f"Не вышли в ноль до начала измерения x {x_home} y {y_home}")
             return False
 
     
