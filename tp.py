@@ -566,6 +566,8 @@ def scanUSB():
 # ****************main ********************
 if __name__ == '__main__':
 
+    on("ena")
+    off("son")    
 
     stop_event = threading.Event()
     
