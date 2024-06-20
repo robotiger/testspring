@@ -45,6 +45,12 @@ tab={
 
 tp_status={"progress":0,"cycles_done":0,"to_do":"nothing","clength":0,"ckx":0,"shrink":0,"force":0}
 tmp={}
+todotime=time.time()
+
+def settodostatus(status):
+    if time.time()>todotime:
+        tp_status["to_do"]=status
+        todotime=time.time()+2
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -78,7 +84,7 @@ def sendstatus():
             if item != 'force':
                 tp_status[item]=request.json.get(item)
     if tp_status["cycles_done"]>=config['cycles']:
-        tp_status['to_do']="nothing"
+        settodostatus("nothing")
     data={}
 
     for x in config:
@@ -90,53 +96,53 @@ def execute_newtest():
     config['snum']=config.get('snum',1)+1
     config['xlfilename']=f'sp{config["snum"]:06d}.xlsx'
     #config['cycles_complete']=0 #количество циклов зафиксированное в журнале
-    tp_status['to_do']="newtest"    
+    settodostatus("newtest")
     return redirect(url_for('index'))
 
 @app.route('/setspring', methods=['GET'])
 def execute_setspring():
-    tp_status['to_do']="setspring"
+    settodostatus("setspring")
     return redirect(url_for('index'))
 
 @app.route('/runtest', methods =['GET'])
 def execute_runtest():
-    tp_status['to_do']="runtest"
+    settodostatus("runtest")
     return redirect(url_for('index'))
 
 @app.route('/rtest', methods =['GET'])
 def execute_rtest():
-    tp_status['to_do']="rtest"
+    settodostatus("rtest")
     return redirect(url_for('index'))
 
 @app.route('/mtest', methods =['GET'])
 def execute_mtest():
-    tp_status['to_do']="mtest"
+    settodostatus("mtest")
     return redirect(url_for('index'))
 
 @app.route('/ktest', methods =['GET'])
 def execute_ktest():
-    tp_status['to_do']="ktest"
+    settodostatus("ktest")
     return redirect(url_for('index'))
 
 @app.route('/htest', methods =['GET'])
 def execute_htest():
-    tp_status['to_do']="htest"
+    settodostatus("htest")
     return redirect(url_for('index'))
 
 @app.route('/stest', methods =['GET'])
 def execute_stest():
-    tp_status['to_do']="stest"
+    settodostatus("stest")
     return redirect(url_for('index'))
 
 @app.route('/ctest', methods =['GET'])
 def execute_ctest():
-    tp_status['to_do']="ctest"
+    settodostatus("ctest")
     return redirect(url_for('index'))
 
 
 @app.route('/stoptest',methods =['GET'])
 def execute_stoptest():
-    tp_status['to_do']="stoptest"
+    settodostatus("stoptest")
     return redirect(url_for('index'))
 
 @app.route('/download',methods =['GET'])
@@ -148,13 +154,12 @@ def execute_download():
 
 @app.route('/update_software',methods =['GET'])
 def execute_update():
-    tp_status['to_do']="update_software"
+    settodostatus("update_software")
     return redirect(url_for('index'))
 
 @app.route('/reboot',methods =['GET'])
 def execute_reboot():
-    '            <li class="nav-item"> <a class="nav-link"          href="/reboot">Перезагрузить</a>  </li>'
-    tp_status['to_do']="reboot"
+    settodostatus("reboot")
     return redirect(url_for('index'))
   
 @app.route('/progressbar',methods =['GET','POST'])

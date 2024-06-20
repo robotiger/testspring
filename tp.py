@@ -384,7 +384,7 @@ class measures():
         self.xlSaveRow()        
 
 
-        while(config['cycles_complete']<=config["cycles"]):
+        while(config['cycles_complete']<config["cycles"]):
             lprint(f"{config['cycles_complete']}<{config['cycles']}")      
             
             runspeed= int(config["freq"]*38*60/17)
