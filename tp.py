@@ -300,6 +300,7 @@ class measures():
                 self.atHome=True
             else:
                 lprint("датчик ym не нашли")
+                self.atHome=False
                 #stop_event.set()
         return self.atHome        
     
@@ -323,34 +324,39 @@ class measures():
     def runmesure(self):
         global status
         #Перед измерением Выйдем в ноль Y 
-        self.home_ym()
+        y_home=self.home_ym()
         #повернём эксцентрик в исходное
-        self.find_edge()
+        x_home=self.find_edge()
         
-        self.forces=[]
-        off("ena")
-        lprint("move y to first mesuring distance")       
-        grb.write(f"g91g1f1000y{Ycontact+config['lmin']-config['lstep']}\n")
-        #Встаем в положение на один шаг меньше чем первое измерение
-        #в цикле двигаем на шаг затем измеряем
-        time.sleep(0.5)
-        force=mrk.ask()
-        for i in self.sx:
-            
-            grb.write(f"g91g1f1000y{config['lstep']}\n".encode())
+        if x_home and y_home:
+            self.forces=[]
+            off("ena")
+            lprint("move y to first mesuring distance")       
+            grb.write(f"g91g1f1000y{Ycontact+config['lmin']-config['lstep']}\n")
+            #Встаем в положение на один шаг меньше чем первое измерение
+            #в цикле двигаем на шаг затем измеряем
             time.sleep(0.5)
             force=mrk.ask()
-            self.forces.append(force) 
-
-            lprint(f" dist {i}, force {force}")
-        
-        #Отводим Y в исходное положение
-        grb.write(f"g91g1f1000y-{Ycontact+config['lmax']}\n".encode())
-        time.sleep(5)
-        #on("ena")
-
-        status["forces"]=self.forces
-        return self.forces
+            self.sx=list(range(config['lmin'],config['lmax']+config['lstep'],config['lstep']))            
+            for i in self.sx:
+                
+                grb.write(f"g91g1f1000y{config['lstep']}\n".encode())
+                time.sleep(0.5)
+                force=mrk.ask()
+                self.forces.append(force) 
+    
+                lprint(f" dist {i}, force {force}")
+            
+            #Отводим Y в исходное положение
+            grb.write(f"g91g1f1000y-{Ycontact+config['lmax']}\n".encode())
+            time.sleep(5)
+            #on("ena")
+    
+            status["forces"]=self.forces
+            return True
+        else:            
+            lprint("Не вышли в ноль до начала измерения")
+            return False
 
     
                                 
