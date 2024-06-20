@@ -506,7 +506,7 @@ class webrun(threading.Thread):
                 status['to_do']=newstatus['to_do']
                 for x in tab:
                     config[x]=newstatus[x]
-                lprint(f"got status to_do {newstatus['to_do']} \n{config}")
+                #lprint(f"got status to_do {newstatus['to_do']} \n{config}")
                 #print('.',end='')
             except:
                 #print('-',end='')
