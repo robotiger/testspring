@@ -336,8 +336,7 @@ class measures():
         time.sleep(0.5)
         force=mrk.ask()
         for i in self.sx:
-            if status['to_do']=='stoptest':
-                break               
+            
             grb.write(f"g91g1f1000y{config['lstep']}\n".encode())
             time.sleep(0.5)
             force=mrk.ask()
