@@ -566,6 +566,8 @@ def scanUSB():
 # ****************main ********************
 if __name__ == '__main__':
 
+    stop_event = threading.Event()
+
     gpIdx=gp(stop_event,"idx")
     gpIdx.start()
     
@@ -579,8 +581,7 @@ if __name__ == '__main__':
     on("ena")
     off("son")    
 
-    stop_event = threading.Event()
-    
+
     devs=scanUSB()
     
     if not 'mark' in devs:
