@@ -77,6 +77,8 @@ def sendstatus():
         for item in tp_status:
             if item != 'force':
                 tp_status[item]=request.json.get(item)
+    if tp_status["cycles_done"]>=config['cycles']:
+        tp_status['to_do']="nothing"
     data={}
 
     for x in config:
