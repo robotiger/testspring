@@ -268,6 +268,7 @@ class measures():
         self.atHome=False
         lprint("Выход в ноль Y координаты")
         off("ena")
+        on("son")
         time.sleep(5)
         if not gpYm.read_value(): #если не на датчике наедем на него
             lprint("двигаемся на датчик Y минус")
@@ -306,6 +307,8 @@ class measures():
     
     def runtest(self,speed,count):
         global status
+        on("son")
+        off("ena")
         #Перед вращением  отведем измеритель в крайнее левое положение
         if not gpYm.read_value(): #если не на датчике наедем на него
             lprint("двигаемся в сторону датчика Y минус на 60мм")
@@ -320,9 +323,11 @@ class measures():
                 break               
             time.sleep(0.1)        
         runmb(0)
+        
 
     def runmesure(self):
         global status
+        off("ena")  #включим привод Y      
         #Перед измерением Выйдем в ноль Y 
         y_home=self.home_ym()
         #повернём эксцентрик в исходное
@@ -330,7 +335,8 @@ class measures():
         
         if x_home and y_home:
             self.forces=[]
-            off("ena")
+
+            off("son") #Перед измерением отключим привод X
             lprint("move y to first mesuring distance")       
             grb.write(f"g91g1f1000y{Ycontact+config['lmin']-config['lstep']}\n")
             #Встаем в положение на один шаг меньше чем первое измерение
@@ -350,7 +356,7 @@ class measures():
             #Отводим Y в исходное положение
             grb.write(f"g91g1f1000y-{Ycontact+config['lmax']}\n".encode())
             time.sleep(5)
-            #on("ena")
+            on("son") #после измерения включим привод X
     
             status["forces"]=self.forces
             return True
@@ -370,6 +376,7 @@ class measures():
         
         self.xlMakeHeader()
         config['cycles_complete']=0
+        
         self.runmesure()
         self.xlSaveRow()        
 
