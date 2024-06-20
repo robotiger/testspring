@@ -500,7 +500,10 @@ class webrun(threading.Thread):
             if res_ok:
                 
                 if gpIdx.count>=0:
-                    status['cycles_done']=config["cycles_complete"]+config["cyclesbetween"]-gpIdx.count
+                    try:
+                        status['cycles_done']=config["cycles_complete"]+config["cyclesbetween"]-gpIdx.count
+                    except:
+                        pass
                 else:
                     status['cycles_done']=0
                     
