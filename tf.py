@@ -48,6 +48,8 @@ tmp={}
 todotime=time.time()
 
 def settodostatus(status):
+    global todotime
+    global tp_status
     if time.time()>todotime:
         tp_status["to_do"]=status
         todotime=time.time()+2
