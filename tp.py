@@ -44,7 +44,7 @@ tab={
  'lstep': 'Шаг измерения усилия пружины',
  'ldistance':'Длина поджатой пружины',
  'xlfilename':'Имя файла протокола',
- 'cycles_complete':'Выполнено циклов'
+ #'cycles_complete':'Выполнено циклов'
  }
     
 #Yfirststep=5
@@ -181,11 +181,13 @@ class mark(threading.Thread):
         lprint("run mark")
         with serial.Serial(self.port, 115200, timeout=1) as self.markserial:
             while(not self.stop_event.is_set()):
-                lprint(f'mark port is {self.markserial._port}')
+                #lprint(f'mark port is {self.markserial._port}')
                 tmp=self.markserial.readline()
                 if len(tmp)>0:
                     self.buf=tmp.decode().strip()
-                    lprint(f'mark read {self.buf}')            
+                    if self.buf=="OVERRANGE":
+                        self.buf="500.5"
+                    #lprint(f'mark read {self.buf}')            
         lprint("Mark closed!!!")
     def ask(self):
         firstMeasure=0
@@ -209,18 +211,18 @@ class grbs(threading.Thread):
         threading.Thread.__init__(self)  
         self.stop_event=stop_event
         self.port=devs['grbl']
-        self.pack=b''
+        self.buf=''
         self.length=1
     def run(self): 
         lprint("run grbs")
         with serial.Serial(self.port, 115200, timeout=1) as self.grblserial:
             buf=b''
             while(not self.stop_event.is_set()):
-                print(f'grbl port is {self.grblserial._port}')
+                #print(f'grbl port is {self.grblserial._port}')
                 tmp=self.grblserial.readline()
                 if len(tmp)>0:
                     self.buf=tmp.decode()
-                    lprint(f'grbs rcv {buf}')
+                    #lprint(f'grbs rcv {buf}')
                     
     def write(self,data):
         if type(data)==type('str'):
@@ -229,6 +231,7 @@ class grbs(threading.Thread):
         lprint(f"sent to grbl {x} byte: {data}")
         
     def soft_reset(self):
+        lprint("soft reset ")
         self.write(b'!') #sw
         setmb(76,100)
         time.sleep(1)
@@ -240,16 +243,12 @@ class grbs(threading.Thread):
 
 
 
-class measures(): #threading.Thread):
+class measures(): 
     
-    #def __init__(self,stop_event):
-        #threading.Thread.__init__(self)
-        #self.stop_event=stop_event   
-        #self.atHome=False
-        #self.sx=[]
+
         
-    def find_edge(self):
-        lprint("start find edge")
+    def find_edge(self):# Поворот эксцентрика в исходное
+        lprint("start find edge Поворот эксцентрика в исходное")
         on("son")
         for t in range(5):
             
@@ -261,52 +260,13 @@ class measures(): #threading.Thread):
                 break
                 #print(gpIdx.stop,gpIdx.count,gpIdx.last)
         # если не вал не повернулся вернём ошибку        
-        return gpIdx.count==1
+        return gpIdx.count==1 
         #lprint("edge found rotation stop at idx")
         #time.sleep(2)
-    
-    def runtest(self,speed,count):
-        global status
-        gpIdx.stop=0
-        gpIdx.count=count
-        runmb(speed)
-        while(gpIdx.count>0):
-            #print(gpIdx.stop,gpIdx.count,gpIdx.last)
-            if status['to_do']=='stoptest':
-                break               
-            time.sleep(0.5)        
-        runmb(0)
-
-    def runmesure(self):
         
-        self.forces=[]
-        lprint("move y to first mesuring distance")
-        off("ena")
-        
-        grb.write(f"g91g1f1000y{Ycontact+config['lmin']-config['lstep']}\n")
-        #input('pause before mesure')
-        time.sleep(0.1)
-        force=mrk.ask()
-        for i in self.sx:
-            grb.write(f"g91g1f1000y{config['lstep']}\n".encode())
-            time.sleep(0.1)
-            force=mrk.ask()
-            #force=0.0
-            self.forces.append(force) 
-
-            lprint(f" dist {i}, force {force}")
-
-        grb.write(f"g91g1f1000y-{config['lmax']}\n".encode())
-        time.sleep(5)
-        #on("ena")
-        return self.forces
-
-    
-    
-    
     def home_ym(self):
         self.atHome=False
-        lprint("включим привод Y")
+        lprint("Выход в ноль Y координаты")
         off("ena")
         time.sleep(5)
         if not gpYm.read_value(): #если не на датчике наедем на него
@@ -341,44 +301,98 @@ class measures(): #threading.Thread):
             else:
                 lprint("датчик ym не нашли")
                 #stop_event.set()
-        return self.atHome
+        return self.atHome        
+    
+    def runtest(self,speed,count):
+        global status
+        #Перед вращением  отведем измеритель в крайнее левое положение
+        if not gpYm.read_value(): #если не на датчике наедем на него
+            lprint("двигаемся в сторону датчика Y минус на 60мм")
+            grb.write("g91g21g1f1000y-60\n") 
+            
+        gpIdx.stop=0
+        gpIdx.count=count
+        runmb(speed)
+        while(gpIdx.count>0):
+            #print(gpIdx.stop,gpIdx.count,gpIdx.last)
+            if status['to_do']=='stoptest':
+                break               
+            time.sleep(0.1)        
+        runmb(0)
+
+    def runmesure(self):
+
+        #Перед измерением Выйдем в ноль Y 
+        self.home_ym()
+        #повернём эксцентрик в исходное
+        self.find_edge()
+        
+        self.forces=[]
+        off("ena")
+        lprint("move y to first mesuring distance")       
+        grb.write(f"g91g1f1000y{Ycontact+config['lmin']-config['lstep']}\n")
+        #Встаем в положение на один шаг меньше чем первое измерение
+        #в цикле двигаем на шаг затем измеряем
+        time.sleep(0.5)
+        force=mrk.ask()
+        for i in self.sx:
+            if status['to_do']=='stoptest':
+                break               
+            grb.write(f"g91g1f1000y{config['lstep']}\n".encode())
+            time.sleep(0.5)
+            force=mrk.ask()
+            self.forces.append(force) 
+
+            lprint(f" dist {i}, force {force}")
+        
+        #Отводим Y в исходное положение
+        grb.write(f"g91g1f1000y-{Ycontact+config['lmax']}\n".encode())
+        time.sleep(5)
+        #on("ena")
+        global status
+        status["forces"]=self.forces
+        return self.forces
+
+    
                                 
-    def run_test(self):
+    def run_test(self): #Основной цикл тестирования измерения
         off("ena")
         on("son")
     
         time.sleep(5)
-    
+        if status['to_do']=='stoptest':
+            return()
+        
         self.xlMakeHeader()
-        self.home_ym()
-        if not self.atHome:
-            self.home_ym()
-        self.cycles=0
-        self.xlSaveRow(self.runmesure())        
-        #input('pause')
-        while(True):
+        config['cycles_complete']=0
+        self.runmesure()
+        self.xlSaveRow()        
+
+
+        while(config['cycles_complete']<=config["cycles"]):
+            lprint(f"{config['cycles_complete']}<{config['cycles']}")      
+            
             runspeed= int(config["freq"]*38*60/17)
 
             if status['to_do']=='stoptest':
                 break             
+
             runcycles=min(config["cyclesbetween"],config["cycles"]-config['cycles_complete'])
-            self.runtest(runspeed,runcycles)
+            self.runtest(runspeed,runcycles) #
             time.sleep(2)
+            
             if status['to_do']=='stoptest':
                 break                 
-            self.find_edge()
             
-            self.xlSaveRow(self.runmesure())
+            config['cycles_complete']+=config["cyclesbetween"]
+            gpIdx.count=config["cyclesbetween"] #чтобы прогресс не скакал а двигался плавно            
+            
+            self.runmesure() # выполнить измерения
+            self.xlSaveRow() # сохранить строку в эксельку
             
             if status['to_do']=='stoptest':
                 break            
-            self.home_ym()
-            if status['to_do']=='stoptest':
-                break                 
-        
-            if config['cycles_complete']>=config["cycles"]:
-                status['to_do']='nothing'
-                break
+
             if stop_event.is_set():
                 break
         time.sleep(1)
@@ -400,7 +414,6 @@ class measures(): #threading.Thread):
         
         row=2
 
-        
         for t in tab:
             ws.cell(row=row,column=1,value=tab[t])
             ws.cell(row=row,column=5,value=config[t])
@@ -422,13 +435,12 @@ class measures(): #threading.Thread):
         config['startrow']=row+1    
         wb.save(config['xlfilename'])
     
-    def xlSaveRow(self,forces):
+    def xlSaveRow(self):
         global status
         wb=xl.load_workbook(config['xlfilename'])
         ws=wb.active
         
-        config['cycles_complete']+=config["cyclesbetween"]
-        gpIdx.count=config["cyclesbetween"] #чтобы прогресс не скакал а двигался плавно
+
         mc=config['startrow']
         
         self.sx=list(range(config['lmin'],config['lmax']+config['lstep'],config['lstep']))
@@ -437,7 +449,7 @@ class measures(): #threading.Thread):
         
         #немного расчетов
         def f(x,sx,sf):
-            return ((sx*x[0]+x[1]-sf)**2).sum()
+            return ((sx*x[0]+x[1]-sf)**2).sum() 
         res=minimize(f,x0=[3,3],args=(sx,sf))
         ckx=res.x[0]
         clength=res.x[1]/res.x[0]+config["ldistance"]
@@ -454,7 +466,7 @@ class measures(): #threading.Thread):
         ws.cell(row=mc,column=5,value=config['slength']-clength) 
         
         
-        for i in range(len(forces)):
+        for i in range(len(self.forces)):
             ws.cell(row=mc,column=i+6,value=self.forces[i]) 
             
         config['startrow']+=1
@@ -542,7 +554,7 @@ if __name__ == '__main__':
     devs=scanUSB()
     
     if not 'mark' in devs:
-        lprint(f'devs {devs} не достаточно')
+        lprint(f'mark-10 не подключен')
         exit()
     lprint(repr(devs))
 
@@ -584,39 +596,36 @@ if __name__ == '__main__':
 
     while(True):
 
-        lprint(f"main {status['to_do']} \n status {status}\n config {config}")
+        #lprint(f"main {status['to_do']} \n status {status}\n config {config}")
         
         if status['to_do']=='setspring':
             lprint(" find edge")
-            if ms.find_edge():
-                status['to_do']='nofindedge'
+            ms.find_edge()
+            lprint("go home ")
+            if ms.home_ym():
+                status['YatHome']='athome'
             else:
-                lprint("go home ")
-                if ms.home_ym():
-                    status['to_do']='athome'
-                else:
-                    status['to_do']='notathome'
+                status['YatHome']='notathome'
                     
         if status['to_do']=='runtest':
-            lprint(f"{config['cycles_complete']}<{config['cycles']}")
+            
             if config['cycles_complete']<config['cycles']:
                 ms.run_test()
-            status['to_do']='nothing'      
+
             
-        if status['to_do']=='mtest':
-            ms.runmesure()
-            status['to_do']='nothing'      
 
         if status['to_do']=='rtest':
             ms.find_edge()
-            status['to_do']='nothing'    
+ 
+        if status['to_do']=='htest':
+            ms.home_ym()() 
             
         if status['to_do']=='ktest':
             runspeed= int(config["freq"]*38*60/17)
             ms.runtest(runspeed,config['cyclesbetween'])
-            status['to_do']='nothing'      
-
-            
+   
+        if status['to_do']=='mtest':
+            ms.runmesure()
 
         time.sleep(1)
         
