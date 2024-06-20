@@ -261,6 +261,7 @@ class measures():
                 #print(gpIdx.stop,gpIdx.count,gpIdx.last)
         # если не вал не повернулся вернём ошибку  
         time.sleep(5)
+        off("son")
         return gpIdx.count==0 
         #lprint("edge found rotation stop at idx")
         #time.sleep(2)
