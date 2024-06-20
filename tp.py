@@ -259,7 +259,8 @@ class measures():
             if gpIdx.count==0:
                 break
                 #print(gpIdx.stop,gpIdx.count,gpIdx.last)
-        # если не вал не повернулся вернём ошибку        
+        # если не вал не повернулся вернём ошибку  
+        time.sleep(5)
         return gpIdx.count==0 
         #lprint("edge found rotation stop at idx")
         #time.sleep(2)
@@ -328,10 +329,11 @@ class measures():
     def runmesure(self):
         global status
         off("ena")  #включим привод Y      
-        #Перед измерением Выйдем в ноль Y 
-        y_home=self.home_ym()
         #повернём эксцентрик в исходное
         x_home=self.find_edge()
+        
+        #Перед измерением Выйдем в ноль Y 
+        y_home=self.home_ym()
         
         if x_home and y_home:
             self.forces=[]
@@ -616,6 +618,7 @@ if __name__ == '__main__':
         if status['to_do']=='setspring':
             lprint(" find edge")
             ms.find_edge()
+            
             lprint("go home ")
             if ms.home_ym():
                 status['YatHome']='athome'
