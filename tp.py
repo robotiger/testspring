@@ -612,7 +612,7 @@ if __name__ == '__main__':
                     
         if status['to_do']=='runtest':
             
-            if config['cycles_complete']<config['cycles']:
+            #if config['cycles_complete']<config['cycles']:
                 ms.run_test()
 
             
