@@ -618,7 +618,7 @@ if __name__ == '__main__':
             ms.find_edge()
  
         if status['to_do']=='htest':
-            ms.home_ym()() 
+            ms.home_ym() 
             
         if status['to_do']=='ktest':
             runspeed= int(config["freq"]*38*60/17)
