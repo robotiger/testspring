@@ -184,7 +184,8 @@ if __name__ == '__main__':
     #обновить ip адрес для сервера nginx
     with open(wanipname, "w") as the_file: 
         the_file.write(f"server_name {' '.join(filter(lambda x:not x is None,[x[1]['inet'] for x in ifcfg.interfaces().items()]))};\n")
-        
+    app.add_url_rule('/favicon.ico',
+                     redirect_to=url_for('static', filename='favicon.ico'))        
     app.wsgi_app = ProxyFix(app.wsgi_app)    
     app.run(debug=True)
     
