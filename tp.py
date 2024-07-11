@@ -62,6 +62,7 @@ maxspeed=2500
 status={"progress":0,"cycles_done":0,"to_do":"nothing","clength":0,"ckx":0,"shrink":0,"status":""}
 config={}
 
+
 grb=None
 gpp=None
 cmb=None
@@ -466,19 +467,18 @@ class measures():
         def f(x,sx,sf):
             return ((sx*x[0]+x[1]-sf)**2).sum() 
         res=minimize(f,x0=[3,3],args=(sx,sf))
-        ckx=res.x[0]
-        clength=res.x[1]/res.x[0]+config["ldistance"]
         # сохраняем результаты расчета в статус для обновления веб страницы
-        status['ckx']=ckx
-        status['clength']=clength
-        status['shrink']=config['slength']-clength
+        
+        status['ckx']=res.x[0]
+        status['clength']=res.x[1]/res.x[0]+config["ldistance"]
+        status['shrink']=config['slength']-status['clength']
 
         #заполняем строку данными
         ws.cell(row=mc,column=1,value=datetime.datetime.now()) 
         ws.cell(row=mc,column=2,value=config['cycles_complete']) 
-        ws.cell(row=mc,column=3,value=clength) 
-        ws.cell(row=mc,column=4,value=ckx) 
-        ws.cell(row=mc,column=5,value=config['slength']-clength) 
+        ws.cell(row=mc,column=3,value=status['clength']) 
+        ws.cell(row=mc,column=4,value=status['ckx']) 
+        ws.cell(row=mc,column=5,value=status['shrink']) 
         
         
         for i in range(len(self.forces)):
@@ -581,12 +581,15 @@ if __name__ == '__main__':
     on("ena")
     off("son")    
 
+    while True:
 
-    devs=scanUSB()
+        devs=scanUSB()
     
-    if not 'mark' in devs:
-        lprint(f'mark-10 не подключен')
-        exit()
+        if 'mark' in devs:
+            break
+        else:
+            lprint(f'mark-10 не подключен')
+     
     lprint(repr(devs))
 
     mrk=mark(stop_event,devs)
@@ -615,11 +618,16 @@ if __name__ == '__main__':
 
     web=webrun(stop_event)
     web.start()
-    
+    #config['to_do']
 
     while(True):
 
         #lprint(f"main {status['to_do']} \n status {status}\n config {config}")
+        
+        
+        #if status['to_do']=='update_software':
+        #    update_software()
+        
         
         if status['to_do']=='setspring':
             lprint(" find edge")
