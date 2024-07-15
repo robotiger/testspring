@@ -3,8 +3,8 @@ Description = Test spring python application
 After=network.target
 
 [Service]
-User=bar
-Group=bar
+User=bfg
+Group=bfg
 PIDFile=/var/tmp/testspring.pid
 Environment=FLASK_CONFIG=production
 WorkingDirectory=/home/bfg/testspring/

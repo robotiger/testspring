@@ -3,8 +3,8 @@ Description = WSGI instance to serve Test spring web application
 After=network.target
 
 [Service]
-User=bar
-Group=bar
+User=bfg
+Group=bfg
 PIDFile=/var/tmp/barry.pid
 Environment=FLASK_CONFIG=production
 WorkingDirectory=/home/bfg/testspring
