@@ -1,0 +1,17 @@
+[Unit]
+Description = WSGI instance to serve Test spring python application
+After=network.target
+
+[Service]
+User=bar
+Group=bar
+PIDFile=/var/tmp/testspring.pid
+Environment=FLASK_CONFIG=production
+WorkingDirectory=/home/bfg/testspring
+ExecStart=/usr/bin/python3 /home/bfg/testspring/tp.py
+Restart=alwais
+RestartSec=15s
+
+[Install]
+WantedBy=multi-user.target
+
