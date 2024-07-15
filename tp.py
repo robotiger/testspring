@@ -13,6 +13,7 @@ import sqlitedict
 import ifcfg
 import requests
 from scipy.optimize import minimize
+import subprocess
 
 
 
@@ -560,7 +561,27 @@ def scanUSB():
     return devs
                 
                 
+
+def ConnecttoMark():
+    global mrk
+    if mrk==None:
+        devs=scanUSB()
+        if 'mark' in devs:
+            lprint(repr(devs))
+            mrk=mark(stop_event,devs)
+            mrk.start()
+        else:        
+            lprint(f'mark-10 не подключен')    
                 
+
+def update_software():
+    p=subprocess.run('git pull'.split())
+    time.sleep(3)
+    if p.returncode==0:
+        off("son")
+        on("ena")   
+        grb.soft_reset()
+        subprocess.run('/sbin/reboot'.split())
 
 
 # ****************main ********************
@@ -581,19 +602,11 @@ if __name__ == '__main__':
     on("ena")
     off("son")    
 
-    while True:
-
-        devs=scanUSB()
     
-        if 'mark' in devs:
-            break
-        else:
-            lprint(f'mark-10 не подключен')
+    ConnecttoMark()
      
-    lprint(repr(devs))
+    
 
-    mrk=mark(stop_event,devs)
-    mrk.start()
     
     grb=grbs(stop_event,{'grbl':'/dev/ttyS2'})
     grb.start()
@@ -625,8 +638,8 @@ if __name__ == '__main__':
         #lprint(f"main {status['to_do']} \n status {status}\n config {config}")
         
         
-        #if status['to_do']=='update_software':
-        #    update_software()
+        if status['to_do']=='update_software':
+            update_software()
         
         
         if status['to_do']=='setspring':
@@ -640,9 +653,9 @@ if __name__ == '__main__':
                 status['YatHome']='notathome'
                     
         if status['to_do']=='runtest':
-            
+            ConnecttoMark()
             #if config['cycles_complete']<config['cycles']:
-                ms.run_test()
+            ms.run_test()
 
             
 
@@ -657,6 +670,7 @@ if __name__ == '__main__':
             ms.runtest(runspeed,config['cyclesbetween'])
    
         if status['to_do']=='mtest':
+            ConnecttoMark()            
             ms.runmesure()
 
         time.sleep(1)
