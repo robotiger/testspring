@@ -1,5 +1,5 @@
 [Unit]
-Description = WSGI instance to serve Test spring python application
+Description = Test spring python application
 After=network.target
 
 [Service]
