@@ -96,7 +96,7 @@ def sendstatus():
 @app.route('/newtest', methods=['GET'])
 def execute_newtest():
     config['snum']=config.get('snum',1)+1
-    config['xlfilename']=f'sp{config["snum"]:06d}.xlsx'
+    config['xlfilename']=f'../xfiles/sp{config["snum"]:06d}.xlsx'
     #config['cycles_complete']=0 #количество циклов зафиксированное в журнале
     settodostatus("newtest")
     return redirect(url_for('index'))
