@@ -8,8 +8,8 @@ Group=bar
 PIDFile=/var/tmp/barry.pid
 Environment=FLASK_CONFIG=production
 WorkingDirectory=/home/bar/barry
-#ExecStart=/home/bfg/.local/bin/waitress-serve  tp:app
-ExecStart=/home/bfg/.local/bin/gunicorn -b 127.0.0.1:5000 tf:app
+ExecStart=/home/bfg/.local/bin/waitress-serve --listen=127.0.0.1:5000  tf:app
+#ExecStart=/home/bfg/.local/bin/gunicorn -b 127.0.0.1:5000 tf:app
 
 Restart=alwais
 RestartSec=15s

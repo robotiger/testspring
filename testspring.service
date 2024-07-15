@@ -7,7 +7,7 @@ User=bar
 Group=bar
 PIDFile=/var/tmp/testspring.pid
 Environment=FLASK_CONFIG=production
-WorkingDirectory=/home/bfg/testspring
+WorkingDirectory=/home/bfg/testspring/
 ExecStart=/usr/bin/python3 /home/bfg/testspring/tp.py
 Restart=alwais
 RestartSec=15s
