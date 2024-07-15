@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for,  send_file, Response, jsonify
+from flask import Flask, render_template, request, redirect, url_for,  send_file, Response, jsonify, send_from_directory
 from flask_bootstrap import Bootstrap
 from werkzeug.middleware.proxy_fix import ProxyFix
 import threading
@@ -177,15 +177,18 @@ def forcemeasure():
     return jsonify({"result":"stored"})
         
 
-
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, 'static'),
+                          'favicon.ico',mimetype='image/vnd.microsoft.icon')
 
         
 if __name__ == '__main__':
     #обновить ip адрес для сервера nginx
     with open(wanipname, "w") as the_file: 
         the_file.write(f"server_name {' '.join(filter(lambda x:not x is None,[x[1]['inet'] for x in ifcfg.interfaces().items()]))};\n")
-    app.add_url_rule('/favicon.ico',
-                     redirect_to=url_for('static', filename='favicon.ico'))        
+#    app.add_url_rule('/favicon.ico',
+#                     redirect_to=url_for('static', filename='favicon.ico'))        
     app.wsgi_app = ProxyFix(app.wsgi_app)    
     app.run(debug=True)
     
