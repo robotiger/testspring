@@ -52,7 +52,7 @@ def settodostatus(status):
     global tp_status
     if time.time()>todotime:
         tp_status["to_do"]=status
-        todotime=time.time()+2
+        todotime=time.time()+2.5
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
